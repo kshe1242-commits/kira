@@ -43,9 +43,8 @@ public class VisitorDAO {
 
         // 최신순으로 정렬
         String sql = "SELECT v_id, v_writer_id, v_owner_id, v_emoji, " +
-                "TO_CHAR(v_date, 'MM.DD AM HH12:MI') as v_date_fmt " + // 포맷팅 추가
+                "TO_CHAR(v_date, 'MM.DD AM HH12:MI') as v_date_fmt " +
                 "FROM visitor_log WHERE v_owner_id = ? ORDER BY v_date DESC";
-
         try {
             con = DBManager.connect();
             pstmt = con.prepareStatement(sql);
@@ -54,12 +53,9 @@ public class VisitorDAO {
 
             while (rs.next()) {
                 VisitorDTO v = new VisitorDTO();
-                v.setV_id(rs.getInt("v_id"));
                 v.setV_writer_id(rs.getString("v_writer_id"));
-                v.setV_owner_id(rs.getString("v_owner_id"));
-                v.setV_emoji(rs.getInt("v_emoji"));
-                // 오라클 DATE 타입을 문자열로 깔끔하게 받기
-                v.setV_date(rs.getString("v_date"));
+                // SQL 별칭인 v_date_fmt로 가져와야 포맷팅된 날짜가 들어갑/니다.
+                v.setV_date(rs.getString("v_date_fmt"));
                 list.add(v);
             }
         } catch (Exception e) {

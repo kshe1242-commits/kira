@@ -745,3 +745,19 @@ body::after {
     color: #8a7a78;
     font-weight: bold;
 }
+.notebook.is-visitor::before {
+    display: none !important;
+}
+
+/* 선이 사라져서 내용이 왼쪽으로 너무 붙는다면 여백 조절 */
+.notebook.is-visitor .nb-body,
+.notebook.is-visitor .posts {
+    padding-left: 25px; /* 가려지던 부분만큼 여백 확보 */
+}
+
+/* 방문자 리스트의 가로 구분선 디자인 (선택사항) */
+.notebook.is-visitor .post-item {
+    border-bottom: 1px dashed #f2c0bd;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}

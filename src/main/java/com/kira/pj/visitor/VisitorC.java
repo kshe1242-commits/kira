@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet(name = "VisitorC", value = "/visitor")
 public class VisitorC extends HttpServlet {
@@ -14,15 +15,17 @@ public class VisitorC extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 1. DB 연동 (지금은 주석 처리된 상태 유지)
-        // VisitorDAO dao = new VisitorDAO();
-        // List<VisitorDTO> list = dao.getAllVisitors();
+        VisitorDAO dao = new VisitorDAO();
+        // 홈피 주인 ID(DongMin)를 기준으로 전체 조회
+        List<VisitorDTO> list = dao.getAllVisitors("DongMin");
         // request.setAttribute("visitorList", list);
 
         // 2. 화면 설정 (파일명 앞에 /를 붙여 경로를 확실히 합니다)
-        request.setAttribute("content", "/visitor.jsp");
+        request.setAttribute("visitorList", list);
+        request.setAttribute("content", "visitor/visitor.jsp");
 
         // 3. 포워딩 (main.jsp가 WEB-INF 밖에 있다면 아래처럼, 안에 있다면 경로 수정)
-        request.getRequestDispatcher("/main.jsp").forward(request, response);
+        request.getRequestDispatcher("index.jsp").forward(request, response);
     }
     // 새로운 방문 기록을 저장하는 역할 (생성: Create)
     @Override
