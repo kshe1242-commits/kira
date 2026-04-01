@@ -1,4 +1,4 @@
-package servlet;
+package com.kira.pj.main;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
