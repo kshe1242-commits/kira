@@ -1,11 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
-<head>
   <link rel="stylesheet" href="/css/index.css">
-</head>
-<body style="margin:0; padding:0;">
-
 <%-- nb-body를 div로 유지하되 height:100%로 꽉 채움 --%>
 <div class="nb-body" style="min-height:100vh;">
 
@@ -27,6 +22,3 @@
   </div>
 
 </div>
-
-</body>
-</html>
