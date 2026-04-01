@@ -1,6 +1,6 @@
 package com.kira.pj.pic;
 
-import com.kira.pj.main.DBManager_new;
+import com.kira.pj.main.DBManager;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
@@ -15,7 +15,7 @@ public class PicDAO {
 
     private PicDAO() {
         try {
-            con = DBManager_new.connect();
+            con = DBManager.connect();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
