@@ -5,6 +5,7 @@
 <head>
     <title>JSP - Hello World</title>
     <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/visitor.css">
 </head>
 <body>
 <div class="desk-wrapper">
