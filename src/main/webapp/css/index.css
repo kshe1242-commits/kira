@@ -374,6 +374,20 @@ body::after {
     overflow-y: auto;
 }
 
+#notebook-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    min-height: 0;
+    display: block;
+    border-radius: 0 0 10px 10px;
+}
+
+.notebook-header,
+.nb-tabs{
+    flex-shrink: 0;
+}
+
 /* ============================
 글쓰기 & 게시글 스타일
 ============================ */
@@ -614,6 +628,14 @@ body::after {
 #yt-player {
     width: 156px !important;
     height: 200px !important;   /* 16:9 비율 */
+    display: block;
+}
+
+/* index.css에 추가 */
+#yt-player img {
+    width: 156px;
+    height: 200px;
+    object-fit: contain;   /* 비율 유지하며 꽉 채움 */
     display: block;
 }
 
