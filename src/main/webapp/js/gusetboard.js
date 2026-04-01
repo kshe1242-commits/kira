@@ -1,10 +1,18 @@
+document.addEventListener('DOMContentLoaded', function() {
+    flatpickr("#datePicker", {
+        locale: "ko", // 한국어
+        dateFormat: "Y-m-d",
+        defaultDate: "${not empty selectedDate ? selectedDate : 'today'}",
+        position: "below", // 클릭한 요소 아래에 표시
+        disableMobile: "true",
+        onChange: function(selectedDates, dateStr) {
+            // 날짜 선택 시 자동으로 페이지 이동
+            location.href = "board?date=" + dateStr;
+        }
+    });
 
-    function ChoiceDay() {
-    // 숨겨진 date input을 클릭한 효과를 줍니다.
-    document.getElementById('datePicker').showPicker();
-}
-
-    function sendDate(date) {
-    // 선택한 날짜를 파라미터로 담아 페이지를 다시 호출합니다.
-    location.href = "board?date=" + date;
-}
+    // span 클릭 시 달력이 뜨도록 연결
+    document.getElementById('calendar-trigger').addEventListener('click', function() {
+        document.getElementById('datePicker')._flatpickr.open();
+    });
+});

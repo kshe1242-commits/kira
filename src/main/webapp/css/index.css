@@ -451,6 +451,9 @@ body::after {
     border-bottom: 1px dashed #eee;
     padding-bottom: 5px;
 }
+#datePicker{
+
+}
 
 .post-user {
     font-size: 18px;

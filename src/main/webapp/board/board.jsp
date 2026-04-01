@@ -1,10 +1,14 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Board</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
 </head>
 <body>
 <div class="nb-tabs">
@@ -19,18 +23,16 @@
 
     <div class="posts">
         <div class="post-item">
-            <div class="post-header">
-                <span class="post-user">방명록</span>
-                    <jsp:useBean id="now" class="java.util.Date"/>
-                <span class="post-date" onclick="ChoiceDay()" style="cursor:pointer;">
-                    <c:choose>
-                        <c:when test="${not empty selectedDate}">${selectedDate}</c:when>
-                        <c:otherwise>
-                            <fmt:formatDate value="${now}" pattern="yyyy-MM-dd"/>
-                        </c:otherwise>
-                    </c:choose>
+            <div class="post-header" style="position: relative;"> <span class="post-user">방명록</span>
+
+                <span id="calendar-trigger" class="post-date" style="cursor:pointer; font-weight: bold;">
+                  <c:choose>
+                     <c:when test="${not empty selectedDate}">${selectedDate}</c:when>
+                      <c:otherwise><fmt:formatDate value="${now}" pattern="yyyy-MM-dd"/></c:otherwise>
+                 </c:choose>
                 </span>
-                <input type="date" id="datePicker" style="display:none;" onchange="sendDate(this.value)">
+
+                <input type="text" id="datePicker" style="position:absolute; right:30px; opacity:0; width:1px;">
             </div>
             <div class="post-text">
                 <c:forEach items="${guestBoards}" var="gb">
