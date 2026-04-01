@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 public class BoardC extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
     }
 
     public void destroy() {

@@ -16,8 +16,7 @@ public class HomeBodyServlet extends HttpServlet {
 
         // 나중에 DB 데이터 여기서 세팅
         // req.setAttribute("postList", postDAO.getList());
+        req.getRequestDispatcher("/home-body.jsp").forward(req, resp);
 
-        req.getRequestDispatcher("home-body.jsp")
-                .forward(req, resp);
     }
 }

@@ -634,6 +634,7 @@ body::after {
 /* index.css에 추가 */
 #yt-player img {
     width: 156px;
+
     height: 200px;
     object-fit: contain;   /* 비율 유지하며 꽉 채움 */
     display: block;
