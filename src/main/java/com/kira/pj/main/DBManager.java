@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class DBManager_new {
+public class DBManager {
     private static BasicDataSource dataSource;
     static {
         dataSource = new BasicDataSource();
