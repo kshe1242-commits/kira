@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -33,17 +34,14 @@ public class GuestBoardDAO {
             con = DBManager.connect();
             request.setCharacterEncoding("utf-8");
 
-            String sql = "select guest_nick, board_content, is_private, created_at from guestboard_test ";
-            if (gbDate != null && !gbDate.isEmpty()) {
-                sql += "where to_char(created_at, 'YYYY-MM-DD') = ? order by created_at desc";
-            }else{
-            sql += " order by created_at desc";
+            if (gbDate == null || gbDate.isEmpty()) {
+                gbDate  = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
             }
 
+            String sql = "select guest_nick, board_content, is_private, created_at from guestboard_test where to_char(created_at, 'YYYY-MM-DD') = ? order by created_at desc ";
             ps = con.prepareStatement(sql);
-            if (gbDate != null && !gbDate.isEmpty()) {
-                ps.setString(1, gbDate);
-            }
+            ps.setString(1,gbDate);
 
             rs = ps.executeQuery();
             GuestBoardVO guestboard = null;

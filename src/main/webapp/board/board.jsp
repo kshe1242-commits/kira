@@ -24,7 +24,7 @@
     <div class="posts">
         <div class="post-item">
             <div class="post-header" style="position: relative;"> <span class="post-user">방명록</span>
-
+                <jsp:useBean id="now" class="java.util.Date"/>
                 <span id="calendar-trigger" class="post-date" style="cursor:pointer; font-weight: bold;">
                   <c:choose>
                      <c:when test="${not empty selectedDate}">${selectedDate}</c:when>

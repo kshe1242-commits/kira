@@ -5,6 +5,7 @@
 <head>
     <title>JSP - Hello World</title>
     <link rel="stylesheet" href="css/index.css">
+    <script src="js/guestboard.js"></script>
     <link rel="stylesheet" href="css/visitor.css">
     <script src="js/gusetboard.js"></script>
     <link rel="stylesheet" href="css/guestboard.css">
