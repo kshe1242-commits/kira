@@ -15,20 +15,28 @@ public class VisitorC extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // 1. 페이지 번호 파라미터
         String pStr = request.getParameter("p");
         int p = (pStr == null) ? 1 : Integer.parseInt(pStr);
 
+        // 2. DB 조회
         VisitorDAO dao = new VisitorDAO();
         String ownerId = "DongMin";
 
+        // 메인 방문자 목록
         List<VisitorDTO> list = dao.getVisitorsByPage(ownerId, p);
+
+        // 최근 방문자 목록
         List<VisitorDTO> recent = dao.getRecentVisitors(ownerId);
 
+        // JSP 전달
         request.setAttribute("visitorList", list);
         request.setAttribute("recentVisitors", recent);
         request.setAttribute("currentPage", p);
 
+        // AJAX 여부 확인
         String ajax = request.getParameter("ajax");
+
         if ("true".equals(ajax)) {
             request.getRequestDispatcher("visitor/visitor.jsp").forward(request, response);
         } else {
@@ -37,18 +45,23 @@ public class VisitorC extends HttpServlet {
         }
     }
 
+    // 방문 기록 저장
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
 
+        // 방문자 이름
         String visitorName = request.getParameter("visitorName");
 
         if (visitorName != null && !visitorName.trim().isEmpty()) {
+
             VisitorDTO dto = new VisitorDTO();
             dto.setV_writer_id(visitorName);
             dto.setV_owner_id("DongMin");
 
+            // 랜덤 이모지
             int randomEmoji = (int) (Math.random() * 5) + 1;
             dto.setV_emoji(randomEmoji);
 
@@ -62,6 +75,7 @@ public class VisitorC extends HttpServlet {
             }
         }
 
+        // AJAX 페이지 리로드
         response.sendRedirect("visitor?ajax=true");
     }
 }
