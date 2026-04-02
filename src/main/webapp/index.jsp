@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="css/visitor.css">
     <script src="js/gusetboard.js"></script>
     <link rel="stylesheet" href="css/guestboard.css">
+    <script src="js/diary.js"></script>
+    <link rel="stylesheet" href="css/diary.css">
 </head>
 <body>
 <div class="desk-wrapper">
