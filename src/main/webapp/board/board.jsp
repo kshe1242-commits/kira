@@ -43,7 +43,7 @@
                         </span>
 <%--                                <c:choose>--%>
 <%--                                    <c:when test="${gb.guest_pk == user.pk} ">--%>
-                                <a href="" onclick="updateGB( '${gb.board_content}','${gb.gboard_pk}')" class="gbUp">📝</a>
+                                <a href="" onclick="editMode( '${gb.board_content}','${gb.gboard_pk}')" class="gbUp">📝</a>
 <%--                                    </c:when>--%>
 <%--                                    <c:when test="${gb.guest_pk == user.pk || gb.host_id == user.pk} ">--%>
                                         <a href="" onclick="location.href='delGB?gboard_pk=${gb.gboard_pk}'" class="gbDel">🗑️</a>
