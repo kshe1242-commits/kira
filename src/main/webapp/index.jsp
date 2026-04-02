@@ -70,7 +70,7 @@
 
             <div class="nb-tabs">
                 <div class="nb-tab ${content eq 'main.jsp' or empty content ? 'active' : ''}"
-                     data-src="/main?ajax=true">홈
+                     data-src="/home-body?ajax=true">홈
                 </div>
                 <div class="nb-tab ${content eq 'diary/diary.jsp' ? 'active' : ''}"
                      data-src="/diary?ajax=true">다이어리
@@ -99,7 +99,7 @@
             <div class="mp3">
                 <div class="mp3-screen">
                     <div class="mp3-marquee">
-                        <span class="mp3-title-inner">
+                        <span id="bgm-title" class="mp3-title-inner">
                             ♪ Hype Boy - NewJeans &nbsp;&nbsp;&nbsp;&nbsp;
                             ♪ Attention - NewJeans
                         </span>
@@ -160,7 +160,7 @@
 <script src="/js/music/router.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        loadPlaylist(1);
+        loadPlaylist(1); // 나중에 → loadPlaylist(${loginUser.id}) 로 교체
     });
 </script>
 </body>
