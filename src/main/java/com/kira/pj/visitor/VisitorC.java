@@ -70,4 +70,3 @@ public class VisitorC extends HttpServlet {
         // 3. 저장이 끝나면 목록으로 리다이렉트
         response.sendRedirect("visitor");
     }}
-

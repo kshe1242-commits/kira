@@ -53,6 +53,10 @@ public class VisitorDAO {
                 v.setV_writer_id(rs.getString("v_writer_id"));
                 v.setV_emoji(rs.getInt("v_emoji"));
                 v.setV_date(rs.getString("v_date_fmt"));
+<<<<<<< HEAD
+=======
+                v.setV_emoji(rs.getInt("v_emoji")); // 이 줄이 있어야 JSP에서 이모티콘 번호를 인식합니다.
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
                 list.add(v);
             }
         } catch (Exception e) {
@@ -155,4 +159,8 @@ public class VisitorDAO {
         }
         return list;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)

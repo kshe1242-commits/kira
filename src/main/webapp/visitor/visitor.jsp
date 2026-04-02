@@ -1,10 +1,18 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<<<<<<< HEAD
 <form action="visitor" method="post" class="write-row" style="position: relative; margin-bottom: 20px; width: 100%; bottom: auto;">
     <span style="font-family: 'Nanum Pen Script', cursive; font-size: 20px; color: #8a7a78;">🐾 발도장: </span>
     <input type="text" name="visitorName" class="write-input" placeholder="닉네임" style="width: 120px; flex:none;" required />
+=======
+<form action="visitor" method="post" class="write-row"
+      style="position: relative; margin-bottom: 20px; width: 100%; bottom: auto;">
+    <span style="font-family: 'Nanum Pen Script', cursive; font-size: 20px; color: #8a7a78;">🐾 발도장: </span>
+    <input type="text" name="visitorName" class="write-input" placeholder="닉네임" style="width: 120px; flex:none;"
+           required/>
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
     <button type="submit" class="write-btn">다녀감</button>
 </form>
 
@@ -17,6 +25,7 @@
         </c:when>
         <c:otherwise>
             <c:forEach var="v" items="${visitorList}">
+<<<<<<< HEAD
                 <div class="post-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span class="moving-emoji">
@@ -27,12 +36,30 @@
                                 <c:when test="${v.v_emoji == 4}">🐶</c:when>
                                 <c:otherwise>✨</c:otherwise>
                             </c:choose>
+=======
+                <div class="post-item"
+                     style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="moving-emoji">
+                         <c:choose>
+                             <c:when test="${v.v_emoji == 1}">&#128062;</c:when> <%-- 🐾 --%>
+                             <c:when test="${v.v_emoji == 2}">&#128099;</c:when> <%-- 👣 --%>
+                             <c:when test="${v.v_emoji == 3}">&#128049;</c:when> <%-- 🐱 --%>
+                             <c:when test="${v.v_emoji == 4}">&#128054;</c:when> <%-- 🐶 --%>
+                             <c:otherwise>&#10024;</c:otherwise>             <%-- ✨ --%>
+                         </c:choose>
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
                         </span>
                         <span style="font-size: 16px;"><strong>${v.v_writer_id}</strong>님이 다녀갔습니다.</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 12px; color: #aaa;">${v.v_date}</span>
+<<<<<<< HEAD
                         <a href="javascript:void(0);" onclick="if(confirm('삭제?')) { location.href='visitorDel?vId=${v.v_id}'; }"
+=======
+                        <a href="javascript:void(0);"
+                           onclick="if(confirm('삭제?')) { location.href='visitorDel?vId=${v.v_id}'; }"
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
                            style="text-decoration:none; color:#ff9999; font-weight:bold;">&times;</a>
                     </div>
                 </div>
@@ -41,12 +68,23 @@
     </c:choose>
 </div>
 
+<<<<<<< HEAD
 <div class="paging-box" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 0 10px;">
+=======
+<div class="paging-box"
+     style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 0 10px;">
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
     <c:choose>
         <c:when test="${currentPage > 1}">
             <button class="page-btn" onclick="location.href='visitor?p=${currentPage - 1}'">◀ 이전</button>
         </c:when>
+<<<<<<< HEAD
         <c:otherwise><div style="width:60px;"></div></c:otherwise>
+=======
+        <c:otherwise>
+            <div style="width:60px;"></div>
+        </c:otherwise>
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
     </c:choose>
 
     <span style="font-family: 'Nanum Pen Script'; color: #8a7a78; font-size: 18px;">Page ${currentPage}</span>
@@ -55,6 +93,14 @@
         <c:when test="${fn:length(visitorList) == 7}">
             <button class="page-btn" onclick="location.href='visitor?p=${currentPage + 1}'">다음 ▶</button>
         </c:when>
+<<<<<<< HEAD
         <c:otherwise><div style="width:60px;"></div></c:otherwise>
     </c:choose>
 </div>
+=======
+        <c:otherwise>
+            <div style="width:60px;"></div>
+        </c:otherwise>
+    </c:choose>
+</div>
+>>>>>>> parent of bc619d9 (Merge branch 'main' into dh)
