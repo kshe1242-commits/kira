@@ -38,7 +38,17 @@
                 <c:forEach items="${guestBoards}" var="gb">
 
                     <div id="gbContent">
+                        <span class="gb-text-part">
                             ${gb.guest_nick} : ${gb.board_content}
+                        </span>
+<%--                                <c:choose>--%>
+<%--                                    <c:when test="${gb.guest_pk == user.pk} ">--%>
+                                <a href="" onclick="updateGB( '${gb.board_content}','${gb.gboard_pk}')" class="gbUp">📝</a>
+<%--                                    </c:when>--%>
+<%--                                    <c:when test="${gb.guest_pk == user.pk || gb.host_id == user.pk} ">--%>
+                                        <a href="" onclick="location.href='delGB?gboard_pk=${gb.gboard_pk}'" class="gbDel">🗑️</a>
+<%--                                    </c:when>--%>
+<%--                                </c:choose>--%>
                     </div>
                     <div id="gbCreatedAt">
                             ${gb.created_at}

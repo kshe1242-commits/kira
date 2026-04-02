@@ -432,7 +432,7 @@ body::after {
 
 .posts {
     flex: 1; /* 남는 공간을 다 차지 */
-    
+
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -479,9 +479,7 @@ body::after {
     word-break: break-all;
 }
 
-#gbContent{
-    font-weight:bold ;
-}
+
 #gbCreatedAt{
     font-size: 14px;
     right:0;
