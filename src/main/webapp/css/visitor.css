@@ -11,3 +11,43 @@
     width: 90%;
     left: 3%;
 }
+/* 둥둥 떠다니는 애니메이션 */
+@keyframes floatingEmoji {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(5deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+}
+
+.moving-emoji {
+    display: inline-block;
+    font-size: 22px;
+    animation: floatingEmoji 2s infinite ease-in-out;
+}
+
+/* 짝수번째 아이콘은 약간 다른 타이밍으로 움직이게 설정 */
+.post-item:nth-child(even) .moving-emoji {
+    animation-duration: 2.5s;
+    animation-delay: 0.5s;
+}
+/* 페이징 버튼 스타일 */
+.page-btn {
+    background: #ffffff;
+    border: 1px solid #f2c0bd;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'Gaegu', cursive;
+    font-size: 14px;
+    color: #8a7a78;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+
+.page-btn:hover {
+    background: #fceae8;
+}
+
+/* 방문자 페이지일 때 공책 내부 여백 및 높이 제어 */
+.notebook.is-visitor .nb-body {
+    padding-bottom: 10px; /* 버튼이 너무 바닥에 붙지 않게 */
+    overflow-y: hidden;   /* 스크롤바 대신 페이징 사용 */
+}

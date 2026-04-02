@@ -14,19 +14,21 @@ public class VisitorC extends HttpServlet {
     // 화면을 보여주는 역할 (조회: Read)
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 1. DB 연동 (지금은 주석 처리된 상태 유지)
-        VisitorDAO dao = new VisitorDAO();
-        // 홈피 주인 ID(DongMin)를 기준으로 전체 조회
-        List<VisitorDTO> list = dao.getAllVisitors("DongMin");
-        // request.setAttribute("visitorList", list);
+        // 1. 페이지 번호 파라미터 받기 (기본값 1)
+        String pStr = request.getParameter("p");
+        int p = (pStr == null) ? 1 : Integer.parseInt(pStr);
 
-        // 2. 화면 설정 (파일명 앞에 /를 붙여 경로를 확실히 합니다)
+        VisitorDAO dao = new VisitorDAO();
+        List<VisitorDTO> list = dao.getVisitorsByPage("DongMin", p);
+
+        // 2. JSP로 데이터 및 현재 페이지 전달
         request.setAttribute("visitorList", list);
+        request.setAttribute("currentPage", p);
         request.setAttribute("content", "visitor/visitor.jsp");
 
-        // 3. 포워딩 (main.jsp가 WEB-INF 밖에 있다면 아래처럼, 안에 있다면 경로 수정)
         request.getRequestDispatcher("index.jsp").forward(request, response);
     }
+
     // 새로운 방문 기록을 저장하는 역할 (생성: Create)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -35,20 +37,29 @@ public class VisitorC extends HttpServlet {
         // 1. JSP 폼에서 넘어온 데이터 받기
         String visitorName = request.getParameter("visitorName");
 
-        // 2. [DB 로직] 오라클 DB에 INSERT 실행
-        // 실제로는 아래와 같은 모양이 될 거예요.
-        /*
-        VisitorDTO dto = new VisitorDTO();
-        dto.setvWriterId(visitorName); // 지금은 로그인 연동 전이니 입력받은 이름 사용
-        dto.setvOwnerId("DongMin");    // 현재 홈피 주인
+        // 2. 유효성 검사 및 저장 로직
+        if (visitorName != null && !visitorName.trim().isEmpty()) {
 
-        VisitorDAO dao = new VisitorDAO();
-        dao.insertVisitor(dto);
-        */
+            VisitorDTO dto = new VisitorDTO();
+            dto.setV_writer_id(visitorName);
+            dto.setV_owner_id("DongMin");
 
-        System.out.println("오라클 DB 저장 시도: " + visitorName);
+            // --- 랜덤 이모지 생성 로직 추가 ---
+            // 1부터 5 사이의 정수 랜덤 생성
+            int randomEmoji = (int) (Math.random() * 5) + 1;
+            dto.setV_emoji(randomEmoji);
+            // -------------------------------
 
-        // 3. 저장이 끝나면 목록 페이지로 리다이렉트
-        response.sendRedirect("/visitor");
-    }
-}
+            VisitorDAO dao = new VisitorDAO();
+            int result = dao.insertVisitor(dto);
+
+            if (result == 1) {
+                System.out.println("오라클 DB 저장 성공 (이모지 " + randomEmoji + "번): " + visitorName);
+            } else {
+                System.out.println("오라클 DB 저장 실패");
+            }
+        }
+
+        // 3. 저장이 끝나면 목록으로 리다이렉트
+        response.sendRedirect("visitor");
+    }}

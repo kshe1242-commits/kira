@@ -53,9 +53,10 @@ public class VisitorDAO {
 
             while (rs.next()) {
                 VisitorDTO v = new VisitorDTO();
+                v.setV_id(rs.getInt("v_id"));
                 v.setV_writer_id(rs.getString("v_writer_id"));
-                // SQL 별칭인 v_date_fmt로 가져와야 포맷팅된 날짜가 들어갑/니다.
                 v.setV_date(rs.getString("v_date_fmt"));
+                v.setV_emoji(rs.getInt("v_emoji")); // 이 줄이 있어야 JSP에서 이모티콘 번호를 인식합니다.
                 list.add(v);
             }
         } catch (Exception e) {
@@ -67,7 +68,7 @@ public class VisitorDAO {
     }
 
     // 3. 메인 위젯용 최근 방문자 5명만 조회 (R)
-    public List<VisitorDTO> getRecentVisitors(String ownerId) {
+    public List<VisitorDTO> showVisitors(String ownerId) {
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -88,6 +89,67 @@ public class VisitorDAO {
                 VisitorDTO v = new VisitorDTO();
                 v.setV_writer_id(rs.getString("v_writer_id"));
                 v.setV_date(rs.getString("v_date"));
+                list.add(v);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, pstmt, rs);
+        }
+        return list;
+    }
+
+    // 4. 방문 기록 삭제 (D)
+    public int deleteVisitor(int vId) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        String sql = "DELETE FROM visitor_log WHERE v_id = ?";
+
+        try {
+            con = DBManager.connect();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, vId);
+
+            return pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        } finally {
+            DBManager.close(con, pstmt, null);
+        }
+    }
+
+    public List<VisitorDTO> getVisitorsByPage(String ownerId, int page) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        List<VisitorDTO> list = new ArrayList<>();
+
+        // 7개씩 보여주기 설정
+        int start = (page - 1) * 7 + 1;
+        int end = page * 7;
+
+        String sql = "SELECT * FROM (" +
+                "  SELECT rownum as rn, t.* FROM (" +
+                "    SELECT v_id, v_writer_id, v_emoji, TO_CHAR(v_date, 'MM.DD AM HH12:MI') as v_date_fmt " +
+                "    FROM visitor_log WHERE v_owner_id = ? ORDER BY v_date DESC" +
+                "  ) t" +
+                ") WHERE rn BETWEEN ? AND ?";
+
+        try {
+            con = DBManager.connect();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, ownerId);
+            pstmt.setInt(2, start);
+            pstmt.setInt(3, end);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                VisitorDTO v = new VisitorDTO();
+                v.setV_id(rs.getInt("v_id"));
+                v.setV_writer_id(rs.getString("v_writer_id"));
+                v.setV_date(rs.getString("v_date_fmt"));
+                v.setV_emoji(rs.getInt("v_emoji"));
                 list.add(v);
             }
         } catch (Exception e) {
