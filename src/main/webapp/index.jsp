@@ -6,25 +6,21 @@
     <link rel="stylesheet" href="css/index.css">
     <script src="js/guestboard.js"></script>
     <link rel="stylesheet" href="css/visitor.css">
-    <script src="js/gusetboard.js"></script>
+    <script src="js/guestboard.js"></script>
     <link rel="stylesheet" href="css/guestboard.css">
     <%-- defer로 통일, 중복 스크립트 제거 --%>
     <script defer src="/js/minihome.js"></script>
     <script src="js/diary.js"></script>
     <link rel="stylesheet" href="css/diary.css">
 </head>
-
 <body>
 <div class="desk-wrapper">
     <div class="desk-surface">
-
         <%-- ══ 왼쪽: 프로필 + 메뉴 + 색연필통 ══ --%>
         <div class="left-col">
             <div class="profile">
                 <div class="profile-card">
-                    <div class="profile-photo">
-                        🌬️
-                    </div>
+                    <div class="profile-photo">🌬️</div>
                     <div class="profile-name">DongMin</div>
                     <div class="profile-mood">
                         햇살 가득한 오후,<br/>기분 좋은 바람... 🍃<br/>
