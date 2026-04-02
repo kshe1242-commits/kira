@@ -132,8 +132,6 @@
                 ▶ YouTube에서 보기
             </a>
         </div>
-
-        <div class="postit"> ...</div>
         <!-- 홈버튼 -->
         <div class="phone-home"></div>
     </div>
