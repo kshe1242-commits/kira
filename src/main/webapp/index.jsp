@@ -2,15 +2,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>JSP - Hello World</title>
+    <%-- 라이브러리 --%>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
+
+    <%-- CSS --%>
     <link rel="stylesheet" href="css/index.css">
-    <script src="js/guestboard.js"></script>
     <link rel="stylesheet" href="css/visitor.css">
     <link rel="stylesheet" href="css/guestboard.css">
-    <%-- defer로 통일, 중복 스크립트 제거 --%>
-    <script defer src="/js/minihome.js"></script>
-    <script src="js/diary.js"></script>
     <link rel="stylesheet" href="css/diary.css">
+
+    <%-- JS --%>
+    <script src="js/guestboard.js"></script>
+    <script src="js/diary.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/visitor.js"></script>
+
+
+    <title>Team Kira - Minihompy</title>
 </head>
 <body>
 <div class="desk-wrapper">
@@ -28,19 +38,10 @@
                 </div>
                 <div class="menu-card">
                     <div class="menu-list">
-                        <%-- data-src: 서블릿 경로 --%>
-                        <div class="menu-item ${content eq 'main.jsp' or empty content ? 'active' : ''}"
-                             data-src="/main?ajax=true">홈
-                        </div>
-                        <div class="menu-item ${content eq 'diary/diary.jsp' ? 'active' : ''}"
-                             data-src="/diary?ajax=true">다이어리
-                        </div>
-                        <div class="menu-item ${content eq 'pic/pic.jsp' ? 'active' : ''}"
-                             data-src="/pic?ajax=true">사진첩
-                        </div>
-                        <div class="menu-item ${content eq 'visitor/visitor.jsp' ? 'active' : ''}"
-                             data-src="/visitor?ajax=true">방명록
-                        </div>
+                        <div class="menu-item active" data-src="main.jsp">홈</div>
+                        <div class="menu-item" data-src="diary/diary.jsp">다이어리</div>
+                        <div class="menu-item" data-src="pic/pic.jsp">사진첩</div>
+                        <div class="menu-item" data-src="board/board.jsp">방명록</div>
                     </div>
                 </div>
             </div>
@@ -55,38 +56,28 @@
                 <div class="jar-label">꾸미기</div>
             </div>
         </div>
-        <%-- ══ /왼쪽 ══ --%>
 
-        <%-- is-visitor도 JS가 토글하므로 초기값만 EL로 설정 --%>
-        <div class="notebook ${content eq 'visitor/visitor.jsp' ? 'is-visitor' : ''}"
-             id="notebook">
+        <%-- ══ 가운데: 노트북 도화지 ══ --%>
+        <div class="notebook" id="notebook">
             <div class="notebook-header">
-                <h2>📖 DongMin의 소소한 일상</h2>
+                <h2>📖 Team Kira의 소소한 일상</h2>
                 <div class="visitor">Today 15 | Total 1,234</div>
             </div>
 
             <div class="nb-tabs">
-                <div class="nb-tab ${content eq 'main.jsp' ? 'active' : ''}"
-                     data-src="/home?ajax=true">홈
-                </div>
-                <div class="nb-tab ${content eq 'diary/diary.jsp' ? 'active' : ''}"
-                     data-src="/diary?ajax=true">다이어리
-                </div>
-                <div class="nb-tab ${content eq 'photo/photo.jsp' ? 'active' : ''}"
-                     data-src="/photo?ajax=true">사진첩
-                </div>
-                <div class="nb-tab ${content eq 'visitor/visitor.jsp' ? 'active' : ''}"
-                     data-src="/visitor?ajax=true">방명록
-                </div>
+                <div class="nb-tab active" data-src="main.jsp">홈</div>
+                <div class="nb-tab" data-src="diary/diary.jsp">다이어리</div>
+                <div class="nb-tab" data-src="pic/pic.jsp">사진첩</div>
+                <div class="nb-tab" data-src="board/board.jsp">방명록</div>
             </div>
 
-            <%-- ✅ 핵심 변경: jsp:include → iframe --%>
-            <iframe
-                    id="notebook-frame"
-                    src="${not empty content ? content : 'main.jsp'}"
-                    style="flex:1; width:100%; border:none; display:block; min-height:0;"
-            ></iframe>
+            <%-- ✨ 핵심: 화면이 갈아끼워지는 전용 공간 --%>
+            <div id="notebook-content" style="flex:1; width:100%; overflow-y:auto; padding:10px;">
+            </div>
         </div>
+
+
+
         <%-- ══ /가운데 ══ --%>
 
         <%-- ══ 오른쪽: MP3 + 스마트폰 + 포스트잇 ══ --%>
@@ -143,7 +134,7 @@
 
             <%-- 방문자 보기도 iframe 방식으로 --%>
             <div class="visitor-btn-wrap"
-                 onclick="switchTab('/visitor?ajax=true')">
+                 onclick="loadPage('visitor/visitor.jsp')">
                 <div class="visitor-btn-card">
                     <span class="visitor-icon">🐾</span>
                     <span class="visitor-text">방문자 보기</span>

@@ -1,5 +1,6 @@
 package com.kira.pj.board;
 
+import com.google.gson.Gson;
 import com.kira.pj.main.DBManager;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import javax.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class GuestBoardDAO {
@@ -24,30 +26,28 @@ public class GuestBoardDAO {
             throw new RuntimeException(e);
         }
     }
-    public void showGuestBoard(HttpServletRequest request, HttpServletResponse response) {
+    public String showGuestBoard(HttpServletRequest request, HttpServletResponse response) {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd a hh:mm", Locale.KOREAN);
-            String gbDate = request.getParameter("date");
+            String selectedDate = request.getParameter("date");
             con = DBManager.connect();
             request.setCharacterEncoding("utf-8");
 
-            if (gbDate == null || gbDate.isEmpty()) {
-                gbDate  = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
+            if (selectedDate == null || selectedDate.isEmpty()) {
+                selectedDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             }
 
             String sql = "select * from guestboard_test where to_char(created_at, 'YYYY-MM-DD') = ? order by created_at desc ";
             ps = con.prepareStatement(sql);
-            ps.setString(1,gbDate);
-
+            ps.setString(1, selectedDate);
             rs = ps.executeQuery();
-            GuestBoardVO guestboard = null;
+
             ArrayList<GuestBoardVO> guestBoards = new ArrayList<>();
             while (rs.next()) {
-                guestboard = new GuestBoardVO();
+                GuestBoardVO guestboard = new GuestBoardVO();
                 guestboard.setGboard_pk(rs.getString("gboard_pk"));
                 guestboard.setGuest_pk(rs.getString("guest_pk"));
                 guestboard.setHost_id(rs.getString("host_id"));
@@ -59,19 +59,21 @@ public class GuestBoardDAO {
                 guestBoards.add(guestboard);
             }
 
-            System.out.println("showGuestBoard success");
-            System.out.println(guestBoards);
-            request.setAttribute("guestBoards", guestBoards);
-            request.setAttribute("selectedDate",gbDate);
+            // HashMap에 리스트와 날짜 담기
+            HashMap<String, Object> gbResult = new HashMap<>();
+            gbResult.put("guestBoards", guestBoards);
+            gbResult.put("selectedDate", selectedDate);
 
-        }catch (Exception e){
+            // Gson으로 JSON 변환
+            Gson gson = new Gson();
+            return gson.toJson(gbResult);
+
+        } catch (Exception e){
             e.printStackTrace();
-        }finally {
-            DBManager.close(con,ps,rs);
+        } finally {
+            DBManager.close(con, ps, rs);
         }
-
-
-
+        return null;
     }
 
     public void addHi(HttpServletRequest request, HttpServletResponse response) {

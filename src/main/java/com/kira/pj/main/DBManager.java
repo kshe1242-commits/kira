@@ -16,7 +16,7 @@ public class DBManager {
         dataSource.setPassword("kira1004");
         dataSource.setMinIdle(50);        // 최소 유휴 커넥션
         dataSource.setMaxIdle(100);        // 최대 유휴 커넥션
-        dataSource.setMaxOpenPreparedStatements(100); // 풀에서 열린 최대 준비된 sql문 개수
+        dataSource.setMaxOpenPreparedStatements(200); // 풀에서 열린 최대 준비된 sql문 개수
 
     }
     public static Connection connect() throws SQLException {

@@ -12,12 +12,13 @@ import java.io.PrintWriter;
 public class BoardC extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        GuestBoardDAO.GBDAO.showGuestBoard(request, response);
+        // 브라우저에게 "이건 JSON 데이터야" 라고 알려줌
+        response.setContentType("application/json; charset=UTF-8");
 
-        request.setAttribute("content","board/board.jsp");
-
-        request.getRequestDispatcher("index.jsp").forward(request,response);
+        // DAO에서 가져온 JSON 문자열을 그대로 출력
+        response.getWriter().print(GuestBoardDAO.GBDAO.showGuestBoard(request, response));
     }
+
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         GuestBoardDAO.GBDAO.addHi(request,response);
