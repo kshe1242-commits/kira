@@ -308,8 +308,7 @@ body::after {
     flex: 1;
     height: 100%;
     position: relative;
-    min-height: 500px;
-    min-width: 0;
+    min-height: 0;
     background: #fbfaff;
     border-radius: 10px;
     box-shadow: 5px 8px 25px rgba(100, 80, 110, 0.1);
@@ -511,10 +510,7 @@ body::after {
 }
 
 
-#gbCreatedAt {
-    font-size: 14px;
-    right: 0;
-}
+
 
 /* ============================
 오른쪽: MP3 & 포스트잇
@@ -692,26 +688,25 @@ body::after {
     border: 1px solid #333;
 }
 
+.phone-screen img {
+    width: 156px;
+    height: 200px;
+    object-fit: contain;
+    display: block;
+}
+
+#phone-thumb {
+    width: 156px;
+    height: 200px;
+    object-fit: contain;
+    display: block;
+}
+
 /* YT IFrame API가 생성하는 iframe */
 #yt-player {
     width: 156px !important;
     height: 200px !important; /* 16:9 비율 */
     display: block;
-}
-
-/* index.css에 추가 */
-#yt-player img {
-    width: 156px;
-    height: 200px;
-    object-fit: contain; /* 비율 유지하며 꽉 채움 */
-    display: block;
-}
-
-#yt-player iframe {
-    width: 156px !important;
-    height: 200px !important;
-    border: none;
-    pointer-events: none; /* 폰 안에서 클릭 막고 링크로만 이동 */
 }
 
 /* 유튜브 바로가기 */

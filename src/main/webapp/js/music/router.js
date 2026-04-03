@@ -5,7 +5,6 @@ function updateMarquee() {
     const titleEl = document.getElementById('bgm-title');
     if (!titleEl || playlist.length === 0) return;
 
-    // 전체 플레이리스트 제목을 이어붙여서 흘러가게
     const fullText = playlist
         .map((t, i) => (i === currentIndex ? '▶ ' : '♪ ') + t.title)
         .join('　　　　');
@@ -13,14 +12,7 @@ function updateMarquee() {
     titleEl.textContent = fullText;
 }
 
-// ── player.js의 updateUI를 감싸서 마퀴도 같이 갱신 ──
-const _originalUpdateUI = updateUI;
-function updateUI(index) {
-    _originalUpdateUI(index);
-    updateMarquee();
-}
-
-// ── 스마트폰 썸네일 업데이트 ──
+// ── 스마트폰 썸네일 + 링크 업데이트 ──
 function updatePhoneScreen(index) {
     const track = playlist[index];
     if (!track) return;
@@ -29,6 +21,20 @@ function updatePhoneScreen(index) {
     if (ytLink) {
         ytLink.href = 'https://www.youtube.com/watch?v=' + track.youtubeId;
     }
+
+    // ── 추가: 썸네일 이미지 업데이트 ──
+    const phoneThumb = document.getElementById('phone-thumb');
+    if (phoneThumb) {
+        phoneThumb.src = 'https://img.youtube.com/vi/' + track.youtubeId + '/mqdefault.jpg';
+    }
+}
+
+// ── player.js의 updateUI를 감싸서 마퀴 + 스마트폰 화면 같이 갱신 ──
+const _originalUpdateUI = updateUI;
+function updateUI(index) {
+    _originalUpdateUI(index);
+    updateMarquee();
+    updatePhoneScreen(index);  // ── 추가
 }
 
 // ── player.js의 playNext / playPrev 이후 훅 ──
