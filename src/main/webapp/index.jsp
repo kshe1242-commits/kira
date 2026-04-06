@@ -1,10 +1,8 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-<<<<<<< HEAD
-pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 
-=======
-         pageEncoding="UTF-8" %>
->>>>>>> 406ec0144faabdbafd7225d976b3b5720b145eea
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,22 +15,14 @@ pageEncoding="UTF-8" %>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
 
     <%-- CSS --%>
-<<<<<<< HEAD
-    <link rel="stylesheet" href="css/index.css" />
-    <link rel="stylesheet" href="css/visitor.css" />
-    <link rel="stylesheet" href="css/guestboard.css" />
-    <link rel="stylesheet" href="css/diary.css" />
-    <link rel="stylesheet" href="css/main.css" />
-      <link rel="stylesheet" href="css/user/logout.css" />
 
-=======
     <link rel="stylesheet" href="css/index.css"/>
     <link rel="stylesheet" href="css/music.css">
     <link rel="stylesheet" href="css/visitor.css"/>
     <link rel="stylesheet" href="css/guestboard.css"/>
     <link rel="stylesheet" href="css/diary.css"/>
     <link rel="stylesheet" href="css/main.css"/>
->>>>>>> 406ec0144faabdbafd7225d976b3b5720b145eea
+
 
     <%-- JS --%>
     <script src="js/guestboard.js"></script>
@@ -49,20 +39,7 @@ pageEncoding="UTF-8" %>
     <div class="desk-surface">
         <%-- ══ 왼쪽: 프로필 + 메뉴 + 색연필통 ══ --%>
         <div class="left-col">
-<<<<<<< HEAD
-          <div class="profile">
-            <div class="profile-card">
-              <div class="profile-photo">🌬️</div>
-              <div class="profile-name">${sessionScope.loginUserNickname}</div>
-              <div class="profile-mood">
-                햇살 가득한 오후,<br />기분 좋은 바람... 🍃<br />
-                <span style="font-size: 11px; color: #c0b0a0">since 2005</span>
-              </div>
 
-
-
-
-=======
             <div class="profile">
                 <div class="profile-card">
                     <div class="profile-photo">🌬️</div>
@@ -100,7 +77,7 @@ pageEncoding="UTF-8" %>
                         </div>
                     </div>
                 </div>
->>>>>>> 406ec0144faabdbafd7225d976b3b5720b145eea
+
             </div>
 
             <div class="pencil-jar-wrap">
