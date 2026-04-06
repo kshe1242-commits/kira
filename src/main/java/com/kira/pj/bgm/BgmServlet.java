@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import com.google.gson.Gson;
 
-@WebServlet(name = "BgmServlet", value = "/api/bgm")
+@WebServlet(name = "BgmServlet", value = "/bgm")
 public class BgmServlet extends HttpServlet {
 
     @Override
