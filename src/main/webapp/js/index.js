@@ -73,7 +73,7 @@ function loadPage(url) {
 }
 
 //=============================================================================================
-// 검색창 js 인데 수정할거 !! 
+// 검색창 js 인데 수정할거 !!
 //=============================================================================================
 document.addEventListener("DOMContentLoaded", function() {
     const searchInput = document.getElementById('live-search-input');
