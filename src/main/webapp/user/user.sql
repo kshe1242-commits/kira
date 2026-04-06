@@ -8,3 +8,5 @@ create table userReg(
                        u_join_date date default sysdate not null
 );
 select * from USERREG;
+
+DELETE FROM userReg WHERE u_id = 'test2';
