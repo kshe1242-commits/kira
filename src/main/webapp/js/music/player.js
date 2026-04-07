@@ -16,7 +16,7 @@ window.playerReady = false;
 window.isDefaultPlaylist = true;
 
 const dummyPlaylist = [
-    { title: 'heavy day', youtubeId: 'aPE5UUCPHyY', duration: 258, trackOrder: 1 },
+    { title: 'Extras', youtubeId: 'MgWVEKk-KUY', duration: 338, trackOrder: 1 },
     { title: 'Needygirl Overdose', youtubeId: 'BnkhBwzBqlQ', duration: 214, trackOrder: 2 },
     { title: '차가운 상어 아가씨', youtubeId: 'wZlv3qDPfjk', duration: 155, trackOrder: 3 },
     { title: '처형박수 (Execution Clap)', youtubeId: 'YcxhmHEykPg', duration: 194, trackOrder: 4 },
