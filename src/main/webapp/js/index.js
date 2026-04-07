@@ -128,7 +128,7 @@ function loadPage(url) {
         }
         return response.text();
     })
-    .then((htmlData) => {
+    .then(htmlData => {
       // 1. 도화지에 가져온 HTML 껍데기 넣기
       document.getElementById("notebook-content").innerHTML = htmlData;
 
