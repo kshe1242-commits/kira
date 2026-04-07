@@ -13,14 +13,9 @@ window.ytPlayer = null;
 window.fetchDone = false;
 window.apiReady = false;
 window.playerReady = false;
-window._savedStartTime = 0;
-
-// ── 새로고침/캐시 복원 대비 플레이어 상태 초기화 ─────────────────
-window.ytPlayer = null;
-window.playerReady = false;
 
 const dummyPlaylist = [
-    { title: 'wake me up - avicii', youtubeId: '5y_KJAg8bHI', duration: 251, trackOrder: 1 },
+    { title: 'heavy day', youtubeId: 'aPE5UUCPHyY', duration: 258, trackOrder: 1 },
     { title: 'Needygirl Overdose', youtubeId: 'BnkhBwzBqlQ', duration: 214, trackOrder: 2 },
     { title: '차가운 상어 아가씨', youtubeId: 'wZlv3qDPfjk', duration: 155, trackOrder: 3 },
     { title: '처형박수 (Execution Clap)', youtubeId: 'YcxhmHEykPg', duration: 194, trackOrder: 4 },
@@ -93,43 +88,27 @@ function notifyBgmFrame() {
 
 // ── 재생 제어 (bgm.js에서도 window.playTrack으로 호출) ───────────
 function playTrack(index) {
-    if (!playerReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function')
-        return;
-
+    if (!playerReady) return;
     currentIndex = index;
-    ytPlayer.loadVideoById({
-        videoId: playlist[currentIndex].youtubeId,
-        startSeconds: 0
-    });
+    ytPlayer.loadVideoById(playlist[currentIndex].youtubeId);
     updateIndexNowPlaying();
     notifyBgmFrame();
-    savePlayerState();
 }
 
 function playNext() {
-    if (!playerReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function')
-        return;
+    if (!playerReady) return;
     currentIndex = (currentIndex + 1) % playlist.length;
-    ytPlayer.loadVideoById({
-        videoId: playlist[currentIndex].youtubeId,
-        startSeconds: 0
-    });
+    ytPlayer.loadVideoById(playlist[currentIndex].youtubeId);
     updateIndexNowPlaying();
     notifyBgmFrame();
-    savePlayerState();
 }
 
 function playPrev() {
-    if (!playerReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function')
-        return;
+    if (!playerReady) return;
     currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-    ytPlayer.loadVideoById({
-        videoId: playlist[currentIndex].youtubeId,
-        startSeconds: 0
-    });
+    ytPlayer.loadVideoById(playlist[currentIndex].youtubeId);
     updateIndexNowPlaying();
     notifyBgmFrame();
-    savePlayerState();
 }
 
 function togglePlay() {
@@ -144,36 +123,24 @@ function togglePlay() {
 function initPlayer() {
     if (!playlist.length || !apiReady) return;
 
+    // ✅ 이전 플레이어 잔재 제거
     const holder = document.getElementById('yt-player-hidden');
-    if (!holder) return;
-
-    holder.innerHTML = '';
+    if (holder) holder.innerHTML = '';
+    ytPlayer = null;
     playerReady = false;
-    ytPlayer=null;
 
     ytPlayer = new YT.Player('yt-player-hidden', {
-        width: '0', height: '0',
+        width: '0',
+        height: '0',
         videoId: playlist[currentIndex].youtubeId,
         playerVars: { autoplay: 1, controls: 0, rel: 0, playsinline: 1 },
         events: {
             onReady: (event) => {
                 playerReady = true;
-
-                // 저장된 재생 위치가 있으면 해당 위치부터 복원
-                const start = window._savedStartTime || 0;
-                event.target.cueVideoById({
-                    videoId: playlist[currentIndex].youtubeId,
-                    startSeconds: start
-                });
-
+                event.target.playVideo();
                 updateIndexNowPlaying();
+                setInterval(updateIndexNowPlaying, 1000);
                 notifyBgmFrame();
-
-                // 1초마다 현재 시간 UI 갱신 + 상태 저장
-                setInterval(() => {
-                    updateIndexNowPlaying();
-                    savePlayerState();
-                }, 1000);
             },
             onStateChange: (e) => {
                 if (e.data === YT.PlayerState.ENDED) playNext();
@@ -181,9 +148,7 @@ function initPlayer() {
                 const btn = document.getElementById('bgm-toggle');
                 if (btn) btn.textContent = e.data === YT.PlayerState.PLAYING ? '⏸' : '▶';
 
-                updateIndexNowPlaying();
                 notifyBgmFrame();
-                savePlayerState();
             }
         }
     });
@@ -191,13 +156,11 @@ function initPlayer() {
 
 // ── 플레이리스트 로드 ─────────────────────────────────────────
 function loadPlaylist(userId) {
-    const saved = restorePlayerState();
 
     // 비로그인시 더미트랙
     if (!userId) {
         playlist = dummyPlaylist;
-        currentIndex = Math.min(saved.currentIndex || 0, dummyPlaylist.length - 1);
-        window._savedStartTime = saved.currentTime || 0;
+        currentIndex =  0;
         fetchDone = true;
         if (apiReady) initPlayer();
         return;
@@ -208,10 +171,8 @@ function loadPlaylist(userId) {
         .then(r => r.json())
         .then(tracks => {
             playlist = tracks;
-            currentIndex = Math.min(saved.currentIndex || 0, tracks.length - 1);
-            window._savedStartTime = saved.currentTime || 0;
+            currentIndex = 0;
             fetchDone = true;
-            updateIndexNowPlaying();
             if (apiReady) initPlayer();
         })
         .catch(err => {
@@ -219,10 +180,8 @@ function loadPlaylist(userId) {
 
             // DB 연동 실패 시 더미로 폴백
             playlist = dummyPlaylist;
-            currentIndex = Math.min(saved.currentIndex || 0, dummyPlaylist.length - 1);
-            window._savedStartTime = saved.currentTime || 0;
+            currentIndex = 0;
             fetchDone = true;
-            updateIndexNowPlaying();
             if (apiReady) initPlayer();
         });
 }
@@ -232,6 +191,11 @@ window.onYouTubeIframeAPIReady = function () {
     apiReady = true;
     if (fetchDone) initPlayer();
 };
+
+// ✅ API가 이미 로드된 상태면 직접 호출
+if (window.YT && window.YT.Player) {
+    window.onYouTubeIframeAPIReady();
+}
 
 // ── 페이지 이탈 직전 현재 곡/재생 위치 저장 ──────────────────────
 window.addEventListener('pageshow', function (event){
