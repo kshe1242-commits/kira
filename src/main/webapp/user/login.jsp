@@ -6,179 +6,7 @@
     <meta charset="UTF-8">
     <title>로그인</title>
 
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap");
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Gaegu", cursive;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f3e5dc;
-            background-image:
-                    repeating-linear-gradient(
-                            90deg,
-                            rgba(160, 130, 100, 0.03) 0px,
-                            rgba(160, 130, 100, 0.03) 1px,
-                            transparent 1px,
-                            transparent 40px
-                    ),
-                    radial-gradient(
-                            circle at 70% 30%,
-                            rgba(210, 180, 140, 0.15) 0%,
-                            transparent 60%
-                    ),
-                    radial-gradient(
-                            circle at 20% 80%,
-                            rgba(210, 180, 140, 0.1) 0%,
-                            transparent 50%
-                    ),
-                    linear-gradient(180deg, #f3e5dc 0%, #e2d2c2 100%);
-            position: relative;
-        }
-
-        body::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: rgba(255,255,255,0.08);
-            pointer-events: none;
-        }
-
-        .login-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .login-card {
-            width: 100%;
-            max-width: 420px;
-            background: #fffdfa;
-            padding: 35px 30px;
-            border-radius: 14px;
-            border: 1px solid #eee0d0;
-            box-shadow:
-                    3px 4px 12px rgba(120, 100, 80, 0.08),
-                    inset 0 0 20px rgba(255, 255, 255, 1);
-            position: relative;
-            transform: rotate(-1deg);
-        }
-
-        .login-card::before {
-            content: "";
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%) rotate(2deg);
-            width: 70px;
-            height: 20px;
-            background: rgba(100, 210, 190, 0.55);
-            border: 1px solid rgba(80, 180, 160, 0.35);
-            border-radius: 2px;
-        }
-
-        .login-title {
-            font-family: "Nanum Pen Script", cursive;
-            font-size: 38px;
-            color: #7a6b5c;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .login-subtitle {
-            text-align: center;
-            font-size: 15px;
-            color: #9a8b7a;
-            margin-bottom: 28px;
-        }
-
-        #loginForm {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .input-group label {
-            font-size: 18px;
-            color: #8a7b6a;
-        }
-
-        .input-group input {
-            width: 100%;
-            border: none;
-            border-bottom: 2px solid #f7cfcd;
-            background: transparent;
-            padding: 10px 6px;
-            font-family: "Gaegu", cursive;
-            font-size: 20px;
-            color: #5a4a3a;
-            outline: none;
-        }
-
-        .input-group input::placeholder {
-            color: #c0b0a0;
-        }
-
-        .input-group input:focus {
-            border-bottom: 2px solid #ee99aa;
-        }
-
-        #loginBtn {
-            margin-top: 10px;
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #fceae8 0%, #f7cfcd 100%);
-            color: #8a7a78;
-            border: 1px solid #f2c0bd;
-            border-radius: 24px;
-            font-family: "Gaegu", cursive;
-            font-size: 19px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        #loginBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(180, 140, 130, 0.15);
-        }
-
-        .login-links {
-            margin-top: 22px;
-            padding-top: 16px;
-            border-top: 1px dashed #e8d5bf;
-            text-align: center;
-            line-height: 1.9;
-        }
-
-        .login-links a {
-            color: #8a7a78;
-            text-decoration: none;
-            font-size: 17px;
-            margin: 0 4px;
-        }
-
-        .login-links a:hover {
-            color: #ee99aa;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/user/login.css">
 </head>
 <body>
 
@@ -209,9 +37,13 @@
     </div>
 </div>
 
+
 <script>
     window.appCtx = "${pageContext.request.contextPath}";
 </script>
 <script src="${pageContext.request.contextPath}/js/user/login.js"></script>
+
+
+
 </body>
 </html>

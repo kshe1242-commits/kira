@@ -10,18 +10,11 @@ CREATE TABLE visitor_log
     v_emoji     NUMBER DEFAULT 1,
     v_date      DATE   DEFAULT SYSDATE
 );
+ALTER TABLE visitor_log
+    RENAME COLUMN v_writer_id TO v_writer_pk;
 
--- 1. 첫 번째 방문자
-INSERT INTO visitor_log (v_writer_id, v_owner_id, v_emoji)
-VALUES ('MiniMe123', 'DongMin', 1);
-
--- 2. 두 번째 방문자
-INSERT INTO visitor_log (v_writer_id, v_owner_id, v_emoji)
-VALUES ('HappyUser', 'DongMin', 2);
-
--- 3. 세 번째 방문자
-INSERT INTO visitor_log (v_writer_id, v_owner_id, v_emoji)
-VALUES ('CyWorldFan', 'DongMin', 5);
+ALTER TABLE visitor_log
+    RENAME COLUMN v_owner_id TO v_owner_pk;
 
 SELECT *
 FROM visitor_log

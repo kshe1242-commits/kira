@@ -43,8 +43,7 @@ async function switchTab(url) {
         // ── 5. 콘텐츠 삽입 ──
         container.innerHTML = html;
 
-        // ── 6. 삽입된 HTML 안의 <script> 태그 재실행 ──
-        //    innerHTML로 넣은 스크립트는 자동 실행되지 않으므로 직접 처리
+// ── 6. 스크립트 재실행 ──
         container.querySelectorAll('script').forEach(oldScript => {
             const newScript = document.createElement('script');
             [...oldScript.attributes].forEach(attr =>
@@ -53,6 +52,17 @@ async function switchTab(url) {
             newScript.textContent = oldScript.textContent;
             oldScript.replaceWith(newScript);
         });
+
+// ✅ ✅ 여기로 이동 (핵심)
+        if (url.includes('/bgm')) {
+            // 약간 딜레이 주면 더 안정적
+            setTimeout(() => {
+                if (typeof renderQueue === 'function') renderQueue();
+                if (typeof window.onTrackChanged === 'function') {
+                    window.onTrackChanged(window.currentIndex);
+                }
+            }, 0);
+        }
 
     } catch (err) {
         container.innerHTML = `
@@ -100,6 +110,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const startUrl = contentToUrl['${content}'] || '/home?ajax=true';
     switchTab(startUrl);
 
-    // 음악 플레이리스트 초기화
-    loadPlaylist(1); // 추후 → loadPlaylist(${loginUser.id})
 });

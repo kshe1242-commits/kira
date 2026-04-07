@@ -1,28 +1,28 @@
 /* =========================================
-   방문자(Visitor) 공통 애니메이션
+   🐾 방문자(Visitor) 공통 애니메이션
    ========================================= */
-@keyframes floatingEmoji {
+@keyframes v-floatingEmoji {
     0% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-5px) rotate(5deg); }
     100% { transform: translateY(0) rotate(0deg); }
 }
 
-.moving-emoji {
+.v-moving-emoji {
     display: inline-block;
     font-size: 22px;
-    animation: floatingEmoji 2s infinite ease-in-out;
+    animation: v-floatingEmoji 2s infinite ease-in-out;
 }
 
 /* 짝수번째 아이콘은 타이틀을 다르게 하여 더 자연스럽게 */
-.post-item:nth-child(even) .moving-emoji {
+.v-post-item:nth-child(even) .v-moving-emoji {
     animation-duration: 2.5s;
     animation-delay: 0.5s;
 }
 
 /* =========================================
-   방문자 작성 영역 (Form)
+   🐾 방문자 작성 영역 (Form)
    ========================================= */
-.vWrite-row {
+.v-write-row {
     display: flex;
     gap: 15px;
     margin-bottom: 20px;
@@ -37,9 +37,9 @@
 }
 
 /* =========================================
-   페이징 & 버튼 스타일
+   🐾 페이징 & 버튼 스타일
    ========================================= */
-.paging-box {
+.v-paging-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -47,7 +47,7 @@
     padding: 0 10px;
 }
 
-.page-btn {
+.v-page-btn {
     background: #ffffff;
     border: 1px solid #f2c0bd;
     border-radius: 20px;
@@ -60,15 +60,15 @@
     transition: all 0.2s;
 }
 
-.page-btn:hover {
+.v-page-btn:hover {
     background: #fceae8;
     transform: translateY(-1px);
 }
 
 /* =========================================
-   우측 컬럼: 최근 방문자 위젯 (Widget)
+   🐾 우측 컬럼: 이전 위젯 스타일 (백업용)
    ========================================= */
-.visitor-widget {
+.v-visitor-widget {
     width: 180px;
     background: #ffffff;
     border: 1px solid #f2c0bd;
@@ -80,23 +80,14 @@
     margin-bottom: 10px;
 }
 
-.widget-title {
-    font-family: "Nanum Pen Script", cursive;
-    font-size: 18px;
-    color: #8a7a78;
-    border-bottom: 1px dashed #f2c0bd;
-    padding-bottom: 5px;
-    margin-bottom: 8px;
-}
-
-.widget-list {
+.v-widget-list {
     display: flex;
     flex-direction: column;
     gap: 5px;
     margin-bottom: 10px;
 }
 
-.widget-item {
+.v-widget-item {
     display: flex;
     justify-content: space-between;
     font-size: 13px;
@@ -104,7 +95,7 @@
     padding: 2px 0;
 }
 
-.w-name {
+.v-w-name {
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -112,12 +103,12 @@
     max-width: 80px;
 }
 
-.w-date {
+.v-w-date {
     font-size: 11px;
     color: #c0b0a0;
 }
 
-.visitor-btn-wrap {
+.v-visitor-btn-wrap {
     background: #fceae8;
     border-radius: 8px;
     padding: 6px;
@@ -126,11 +117,11 @@
     transition: background 0.2s;
 }
 
-.visitor-btn-wrap:hover {
+.v-visitor-btn-wrap:hover {
     background: #f7cfcd;
 }
 
-.visitor-text {
+.v-visitor-text {
     font-family: "Nanum Pen Script", cursive;
     font-size: 15px;
     color: #8a7a78;
@@ -138,9 +129,10 @@
 }
 
 /* =========================================
-   페이지별 특수 예외 처리
+   🐾 페이지별 특수 예외 처리 (수정 금지)
    ========================================= */
 /* 방문자 페이지일 때 공책 왼쪽 선 제거 및 스크롤 제어 */
+/* 주의: .notebook은 인덱스 뼈대 클래스이므로 v-를 붙이지 않습니다 */
 .notebook.is-visitor::before {
     display: none !important;
 }
@@ -149,4 +141,166 @@
     padding-left: 25px;   /* 선이 사라진 만큼 왼쪽 여백 확보 */
     padding-bottom: 10px;
     overflow-y: hidden;   /* 페이징을 위해 세로 스크롤 숨김 */
+}
+
+/* =========================================
+   💌 방명록 모달창 (Modal)
+   ========================================= */
+.v-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 10000;
+}
+
+.v-modal-content {
+    background: #fff;
+    width: 320px;
+    border: 3px dotted #f2c0bd;
+    border-radius: 15px;
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.05);
+    animation: v-modalPop 0.3s ease;
+}
+
+@keyframes v-modalPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.v-modal-header {
+    padding: 10px 15px;
+    border-bottom: 2px dashed #f0eee5;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.v-modal-header h3 {
+    margin: 0;
+    font-family: 'Gaegu', cursive;
+    color: #f2a0a0;
+    font-size: 20px;
+}
+
+.v-close-modal {
+    font-size: 28px;
+    cursor: pointer;
+    color: #aaa;
+    font-weight: bold;
+}
+
+.v-close-modal:hover { color: #ff9999; }
+
+.v-modal-body {
+    padding: 25px 20px;
+    text-align: center;
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    color: #5a4a3a;
+    line-height: 1.5;
+}
+
+.v-modal-footer {
+    padding: 10px;
+    text-align: center;
+    border-top: 2px dashed #f0eee5;
+}
+
+.v-modal-btn {
+    padding: 6px 25px;
+    background: linear-gradient(135deg, #fceae8, #f7cfcd);
+    border: 1px solid #f2c0bd;
+    border-radius: 15px;
+    font-family: 'Gaegu', cursive;
+    font-weight: bold;
+    color: #8a7a78;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.v-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   🐾 우측 컬럼: 신규 통합 방문자 위젯
+   ========================================= */
+.v-recent-widget {
+    background: #fff;
+    border: 2px dotted #f2c0bd;
+    border-radius: 15px;
+    padding: 12px 10px;
+    margin-bottom: 15px;
+    font-family: 'Gaegu', cursive;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.v-widget-title {
+    font-size: 15px;
+    color: #f2a0a0;
+    font-weight: bold;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #f0eee5;
+    padding-bottom: 5px;
+    text-align: center;
+}
+
+#v-recent-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+    min-height: 50px;
+}
+
+#v-recent-list li {
+    font-size: 13px;
+    color: #5a4a3a;
+    padding: 4px 5px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #fcfaf5;
+}
+
+#v-recent-list li strong {
+    color: #f2a0a0;
+    cursor: pointer;
+}
+
+#v-recent-list li strong:hover {
+    text-decoration: underline;
+}
+
+.v-date-small {
+    font-size: 10px;
+    color: #c0b0a0;
+}
+
+.v-empty {
+    text-align: center;
+    color: #aaa;
+    font-size: 12px;
+    justify-content: center !important;
+}
+
+.v-widget-btn {
+    text-align: center;
+    background: #fdf8f7;
+    border: 1px solid #f7cfcd;
+    border-radius: 10px;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.v-widget-btn:hover {
+    background: #fceae8;
+}
+
+.v-btn-text {
+    font-size: 13px;
+    color: #8a7a78;
+    font-weight: bold;
 }

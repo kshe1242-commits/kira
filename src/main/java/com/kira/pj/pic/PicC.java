@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 public class PicC extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+
     }
 
     public void destroy() {

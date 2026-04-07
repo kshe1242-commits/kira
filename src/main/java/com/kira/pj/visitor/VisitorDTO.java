@@ -8,14 +8,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-
 public class VisitorDTO {
-
-    private int v_id;           // PK (자동증가 NUMBER)
-    private String v_writer_id;  // 작성자 ID (방문한 사람)
-    private String v_owner_id;   // 홈피 주인 ID
-    private int v_emoji;        // 이모지 번호 (NUMBER)
-    private String v_date;      // 방문 날짜 (DATE -> String으로 변환해서 사용)
-
-
+    private int v_id;
+    private String v_writer_pk; // 작성자의 식별자 (userReg의 u_pk)
+    private String v_owner_pk;  // 홈피 주인의 식별자 (userReg의 u_pk)
+    private int v_emoji;
+    private String v_date;
 }
