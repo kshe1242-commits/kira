@@ -15,10 +15,11 @@ window.apiReady = false;
 window.playerReady = false;
 
 const dummyPlaylist = [
-    { title: 'heavy day', youtubeId: 'aPE5UUCPHyY', duration: 258, trackOrder: 1 },
-    { title: 'Needygirl Overdose', youtubeId: 'BnkhBwzBqlQ', duration: 214, trackOrder: 2 },
-    { title: '차가운 상어 아가씨', youtubeId: 'wZlv3qDPfjk', duration: 155, trackOrder: 3 },
-    { title: '처형박수 (Execution Clap)', youtubeId: 'YcxhmHEykPg', duration: 194, trackOrder: 4 },
+    {title: 'heavy day', youtubeId: 'aPE5UUCPHyY', duration: 258, trackOrder: 1},
+    {title: 'Needygirl Overdose', youtubeId: 'BnkhBwzBqlQ', duration: 214, trackOrder: 2},
+    {title: '차가운 상어 아가씨', youtubeId: 'wZlv3qDPfjk', duration: 155, trackOrder: 3},
+    {title: '처형박수 (Execution Clap)', youtubeId: 'YcxhmHEykPg', duration: 194, trackOrder: 4},
+    {title: '프리스타일 - Y ', youtubeId: '7Foj-iWij00', duration: 280, trackOrder: 5},
 ];
 
 function formatTime(sec) {
@@ -120,7 +121,7 @@ function initPlayer() {
         width: '0',
         height: '0',
         videoId: playlist[currentIndex].youtubeId,
-        playerVars: { autoplay: 1, controls: 0, rel: 0, playsinline: 1 },
+        playerVars: {autoplay: 1, controls: 0, rel: 0, playsinline: 1},
         events: {
             onReady: (event) => {
                 playerReady = true;
@@ -149,7 +150,7 @@ function loadPlaylist(userId) {
     // 비로그인시 더미트랙
     if (!userId) {
         playlist = dummyPlaylist;
-        currentIndex =  restoreCurrentIndex(dummyPlaylist.length);  //playlist 확정 후 복원
+        currentIndex = restoreCurrentIndex(dummyPlaylist.length);  //playlist 확정 후 복원
         fetchDone = true;
         if (apiReady) initPlayer();
         return;
@@ -187,8 +188,8 @@ if (window.YT && window.YT.Player) {
 }
 
 // ── 페이지 이탈 직전 현재 곡/재생 위치 저장 ──────────────────────
-window.addEventListener('pageshow', function (event){
-    if (event.persisted){
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
         playerReady = false;
         ytPlayer = null;
 

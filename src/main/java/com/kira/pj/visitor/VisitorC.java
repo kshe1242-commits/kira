@@ -25,18 +25,17 @@ public class VisitorC extends HttpServlet {
         String pStr = request.getParameter("p");
         int p = (pStr == null) ? 1 : Integer.parseInt(pStr);
 
-        // [핵심 수정] 하드코딩 제거. 이제 프론트엔드(JS)에서 &ownerPk=XXX 형태로 홈피 주인의 PK를 반드시 보내야 한다.
+        // 프론트엔드(JS)에서 &ownerPk=XXX 형태로 홈피 주인의 PK를 반드시 보내야 한다.
         String ownerPk = request.getParameter("ownerPk");
 
-        // 만약 프론트에서 누구의 홈피인지 보내주지 않았다면 에러 처리
         if (ownerPk == null || ownerPk.trim().isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
         if ("json".equals(reqType)) {
+            // 방명록 탭(페이징) 목록 불러오기
             VisitorDAO dao = new VisitorDAO();
-            // TODO: DAO의 getVisitorsByPage 메서드도 ownerId 대신 ownerPk를 받도록 수정된 상태여야 함
             List<VisitorDTO> list = dao.getVisitorsByPage(ownerPk, p);
 
             Map<String, Object> resultMap = new HashMap<>();
@@ -48,6 +47,29 @@ public class VisitorC extends HttpServlet {
             response.getWriter().print(gson.toJson(resultMap));
 
         } else if ("recent".equals(reqType)) {
+            // =================================================================
+            // [자동 발도장 로직 기생 지점]
+            // 메인 화면 로드 시 위젯 데이터를 요청하므로, 이때 방문 기록을 몰래 생성한다.
+            // =================================================================
+            HttpSession session = request.getSession();
+            String visitorPk = (String) session.getAttribute("loginUserPk");
+
+            // 방문자가 로그인한 상태이고, 내 홈피를 들어온 것이 아닐 때만 발도장을 찍는다.
+            if (visitorPk != null && !visitorPk.equals(ownerPk)) {
+                try {
+                    VisitorDTO vDto = new VisitorDTO();
+                    vDto.setV_writer_pk(visitorPk);
+                    vDto.setV_owner_pk(ownerPk);
+                    vDto.setV_emoji(1); // 자동 방문은 기본 이모지(1)로 고정
+
+                    VisitorDAO vDao = new VisitorDAO();
+                    vDao.upsertVisitor(vDto);
+                } catch (Exception e) {
+                    System.err.println("자동 방문 기록 생성 실패: " + e.getMessage());
+                }
+            }
+
+            // 자동 방문 기록 처리가 끝난 후, 최신 상태의 리스트를 DB에서 꺼내 반환한다.
             VisitorDAO dao = new VisitorDAO();
             List<VisitorDTO> recentList = dao.getRecentVisitors(ownerPk);
 
@@ -69,18 +91,17 @@ public class VisitorC extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        // 1. [철통 보안] 세션에서 로그인한 사용자의 PK를 꺼낸다.
+        // 1. 세션에서 로그인한 사용자의 PK 추출 (글 작성 권한 확인)
         HttpSession session = request.getSession();
         String writerPk = (String) session.getAttribute("loginUserPk");
 
-        // 로그인을 안 했거나 세션이 만료된 사용자의 접근 차단 (401 Unauthorized)
         if (writerPk == null || writerPk.trim().isEmpty()) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().print("로그인이 필요합니다.");
             return;
         }
 
-        // 2. 클라이언트에서는 방명록 주인의 PK와 이모지 값만 보내면 된다. (이름, IP 수집 폐기)
+        // 2. 방명록 등록 처리를 위한 파라미터 수신
         String ownerPk = request.getParameter("ownerPk");
         String visitorEmojiStr = request.getParameter("visitorEmoji");
 
@@ -89,8 +110,8 @@ public class VisitorC extends HttpServlet {
                 int emojiInt = Integer.parseInt(visitorEmojiStr);
 
                 VisitorDTO dto = new VisitorDTO();
-                dto.setV_writer_pk(writerPk); // 세션에서 꺼낸 확실한 내 신분증
-                dto.setV_owner_pk(ownerPk);   // 누구의 홈피에 글을 남기는지
+                dto.setV_writer_pk(writerPk);
+                dto.setV_owner_pk(ownerPk);
                 dto.setV_emoji(emojiInt);
 
                 VisitorDAO dao = new VisitorDAO();
@@ -108,7 +129,6 @@ public class VisitorC extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
-            // 필수 파라미터 누락
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
