@@ -1,8 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,14 +19,6 @@
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/search.css" />
         <link rel="stylesheet" href="css/user/loginbox.css"/>
-
-
-
-
-
-
-
-
     <%-- JS --%>
     <script src="js/guestboard.js"></script>
     <script src="js/diary.js"></script>
@@ -90,7 +79,7 @@
                         </div>
                         <div
                                 class="menu-item ${content eq 'board/board.jsp' ? 'active' : ''}"
-                                data-src="${pageContext.request.contextPath}/bgm?ajax=true"
+                                data-src="${pageContext.request.contextPath}/board/board.jsp"
                         >
                             방명록
                         </div>
@@ -141,7 +130,7 @@
                 </div>
                 <div
                         class="nb-tab ${content eq 'diary/diary.jsp' ? 'active' : ''}"
-                        data-src="diary/diary.jsp"
+                        data-src="/diary?ajax=true"
                 >
                     다이어리
                 </div>
