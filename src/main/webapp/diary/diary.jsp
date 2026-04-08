@@ -27,11 +27,11 @@
             </div>
         </c:when>
 
-        <%-- [2] 상세 보기 모드 화면 (위치 수정 완료!) --%>
+        <%-- [2] 상세 보기 모드 화면 --%>
         <c:when test="${showMode == 'detail'}">
             <div class="diary-board">
                 <div class="board-header">
-                    <h3>👀 ${diary.d_date}의 일기</h3>
+                    <h3>👀 ${curYear}.${curMonth}.${selectedDay} 일기</h3>
                     <button onclick="loadDiary('diary?y=${curYear}&m=${curMonth}&d=${selectedDay}')" class="write-btn">목록으로</button>
                 </div>
 
@@ -43,13 +43,13 @@
 
                     <div style="text-align:right; margin-top:20px;">
                         <button class="write-btn" style="background:#ddd; color:#333;">수정</button>
-                        <button class="write-btn" style="background:#ff9999;">삭제</button>
+                        <button onclick="if(confirm('정말 이 일기를 삭제할까요? 🗑️')) loadDiary('diary-delete?no=${diary.no}&y=${curYear}&m=${curMonth}')" class="write-btn" style="background:#ff9999;">삭제</button>
                     </div>
                 </div>
             </div>
         </c:when>
 
-        <%-- [3] 기본 달력 & 일기 목록 화면 --%>
+        <%-- [3] 기본 달력 & 특정 날짜 일기 목록 화면 --%>
         <c:otherwise>
             <div class="calendar-header">
                 <a href="javascript:void(0);" onclick="loadDiary('diary?y=${prevYear}&m=${prevMonth}')" class="cal-btn">◀</a>
@@ -91,17 +91,18 @@
 
                     <div class="posts">
                         <c:forEach var="p" items="${posts}">
-                            <div class="post-item">
+
+                            <%-- ★ 박스 전체 클릭 기능 (cursor: pointer 추가) ★ --%>
+                            <div class="post-item" onclick="loadDiary('diary-detail?no=${p.no}&y=${curYear}&m=${curMonth}&d=${selectedDay}')" style="cursor: pointer; transition: 0.2s;">
+
                                 <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #eee; padding-bottom:10px; margin-bottom:10px;">
-
-                                        <%-- ★ 제목에 상세 보기(diary-detail) 링크 적용 완료! ★ --%>
-                                    <a href="javascript:void(0);" onclick="loadDiary('diary-detail?no=${p.no}&y=${curYear}&m=${curMonth}&d=${selectedDay}')" style="text-decoration:none;">
-                                        <span style="font-weight:bold; font-size:22px; color:#555;">${p.title}</span>
-                                    </a>
-
+                                        <%-- 이제 a 태그 없이 제목만 출력 --%>
+                                    <span style="font-weight:bold; font-size:22px; color:#555;">${p.title}</span>
                                     <span style="font-size:14px; color:#bbb;">${curYear}.${curMonth}.${selectedDay}</span>
                                 </div>
+
                                 <div style="font-size:18px; color:#666; line-height:1.6; white-space: pre-wrap;">${p.txt}</div>
+
                             </div>
                         </c:forEach>
                     </div>

@@ -7,16 +7,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(value = "/diary-delete")
+@WebServlet("/diary-delete")
 public class DiaryDeleteC extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        // 브라우저에게 "이건 JSON 데이터야" 라고 알려줌
-        response.setContentType("application/json; charset=UTF-8");
+        // 1. DAO야, 넘어온 번호(no) 보고 그 일기 DB에서 싹 지워!
+        DiaryDAO.DDAO.deleteDiary(request);
+
+        // 2. 지운 다음에 달력을 다시 그려야 하니까 달력 계산기 켜기
         DiaryDAO.DDAO.getCalendar(request);
-        request.getRequestDispatcher("diary/diary.jsp").forward(request, response);
-    }
 
-    public void destroy() {
+        // 3. 다이어리 화면으로 다시 포워딩 (달력 화면이 나옴)
+        request.getRequestDispatcher("diary/diary.jsp").forward(request, response);
     }
 }

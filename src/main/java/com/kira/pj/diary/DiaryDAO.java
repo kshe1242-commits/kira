@@ -237,6 +237,33 @@ public class DiaryDAO {
             DBManager.close(con, pstmt, rs);
         }
     }
+
+    public void deleteDiary(HttpServletRequest request) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            con = DBManager.connect();
+
+            // 삭제할 글 번호 받아오기
+            String no = request.getParameter("no");
+
+            // 글 번호로 DB에서 삭제 쿼리!
+            String sql = "DELETE FROM diary_test WHERE d_no = ?";
+            pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, Integer.parseInt(no));
+
+            if (pstmt.executeUpdate() == 1) {
+                System.out.println("일기 삭제 완벽 성공! 🗑️");
+            }
+
+        } catch (Exception e) {
+            System.out.println("일기 삭제 실패 ㅠㅠ");
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, pstmt, null);
+        }
+    }
 }
 
 
