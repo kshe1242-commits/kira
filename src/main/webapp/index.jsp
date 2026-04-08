@@ -12,13 +12,13 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
 
     <%-- CSS --%>
-    <link rel="stylesheet" href="css/index.css" />
-    <link rel="stylesheet" href="css/visitor.css" />
-    <link rel="stylesheet" href="css/guestboard.css" />
-    <link rel="stylesheet" href="css/diary.css" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/search.css" />
-        <link rel="stylesheet" href="css/user/loginbox.css"/>
+    <link rel="stylesheet" href="css/index.css"/>
+    <link rel="stylesheet" href="css/visitor.css"/>
+    <link rel="stylesheet" href="css/guestboard.css"/>
+    <link rel="stylesheet" href="css/diary.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+    <link rel="stylesheet" href="css/search.css"/>
+    <link rel="stylesheet" href="css/user/loginbox.css"/>
     <%-- JS --%>
     <script src="js/guestboard.js"></script>
     <script src="js/diary.js"></script>
@@ -104,16 +104,16 @@
                 id="notebook"
         >
 
-          <div class="notebook-header">
-            <h2> <span id="host-title"> 📖 Team Kira의 소소한 일상</span></h2>
-            <div class="mini-search-wrapper">
-              <input
-                type="text"
-                id="live-search-input"
-                placeholder="이름, 닉네임 검색 🌊"
-                autocomplete="off"
-              />
-              <span class="search-icon">🔍</span>
+            <div class="notebook-header">
+                <h2><span id="host-title"> 📖 Team Kira의 소소한 일상</span></h2>
+                <div class="mini-search-wrapper">
+                    <input
+                            type="text"
+                            id="live-search-input"
+                            placeholder="이름, 닉네임 검색 🌊"
+                            autocomplete="off"
+                    />
+                    <span class="search-icon">🔍</span>
 
 
                     <div id="search-dropdown" class="search-dropdown hidden"></div>
@@ -193,8 +193,6 @@
             </div>
 
 
-
-
             <!-- 스마트폰 영역 -->
             <div class="smartphone">
                 <div class="phone-camera"></div>
@@ -216,19 +214,19 @@
                 ></div>
             </div>
 
-        <%-- 방문자 보기도 iframe 방식으로 --%>
+            <%-- 방문자 보기도 iframe 방식으로 --%>
 
-        <div class="v-recent-widget">
-            <div class="v-widget-title">방문자</div>
+            <div class="v-recent-widget">
+                <div class="v-widget-title">방문자</div>
 
-            <ul id="v-recent-list">
-                <li class="v-empty">불러오는 중...</li>
-            </ul>
+                <ul id="v-recent-list">
+                    <li class="v-empty">불러오는 중...</li>
+                </ul>
 
-            <div class="v-widget-btn" onclick="loadPage('visitor/visitor.jsp')">
-                <span class="v-btn-text">방문자 보기 ▶</span>
+                <div class="v-widget-btn" onclick="loadPage('${pageContext.request.contextPath}/visitor?ajax=true')">
+                    <span class="v-btn-text">방문자 보기 ▶</span>
+                </div>
             </div>
-        </div>
 
         </div>
         <div class="postit">
@@ -241,7 +239,7 @@
 
 <script>
     // 로그인 시 u_id, 비로그인 시 null
-    const loginUserId = "${not empty sessionScope.loginUser ? sessionScope.loginUser.u_id : ''}";
+    const loginUserPk = "${sessionScope.loginUserPk}";
 </script>
 
 <div id="yt-player-hidden" style="display: none"></div>
