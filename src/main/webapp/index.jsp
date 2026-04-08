@@ -196,23 +196,22 @@
             <div class="smartphone">
                 <div class="phone-camera"></div>
                 <div class="phone-screen" style="cursor: pointer">
-                    <img
-                            id="phone-thumb"
-                            src="https://img.youtube.com/vi//mqdefault.jpg"
-                            alt="현재 재생 중 썸네일"
-                    />
-                    <a id="yt-link" href="#" target="_blank" class="phone-yt-link"
-                    >▶ YouTube에서 보기</a
-                    >
-                    <div class="text" id="bgm-title-phone" style="cursor: pointer">♪ 곡 제목</div>
-                </div>
-                <div
-                        class="phone-home"
-                        data-src="/bgm?ajax=true"
-                        style="cursor: pointer"
-                ></div>
-            </div>
 
+                    <div class="phone-thumb-wrapper">
+                        <img id="phone-thumb-blur" src="" alt="">
+
+                        <img id="phone-thumb" src="https://img.youtube.com/vi//mqdefault.jpg"
+                             alt="현재 재생 중 썸네일" />
+                    </div>
+
+                    <a id="yt-link" href="#" target="_blank" class="phone-yt-link">▶ YouTube에서 보기</a>
+                    <div class="text" id="bgm-title-phone">♪ 곡 제목</div>
+                </div>
+                <div class="phone-home"
+                     data-src="/bgm?ajax=true"
+                     style="cursor: pointer">
+                </div>
+            </div>
             <%-- 방문자 보기도 iframe 방식으로 --%>
 
             <div class="v-recent-widget">
