@@ -76,6 +76,7 @@ const pageRoutes = {
     "board.jsp": { initFunc: () => loadGuestBoard(), cssClass: "" },
     "visitor": { initFunc: () => initVisitorLog(), cssClass: "is-visitor" },
     "diary.jsp": { initFunc: () => loadDiary(), cssClass: "" },
+    "photo.jsp": { initFunc: () => loadPhoto(), cssClass: "" },
 };
 
 function loadPage(url) {
