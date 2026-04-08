@@ -129,9 +129,7 @@ public class DiaryDAO {
                 dto.setId(rs.getString("d_id"));
 
                 // ★ 핵심: DB에서 원본 DATE를 꺼낸 다음, 자바가 문자열로 예쁘게 바꿈!
-                java.sql.Date dbDate = rs.getDate("d_date");
-                String formattedDate = sdf.format(dbDate);
-                dto.setD_date(formattedDate); // DTO에는 String으로 쏙 들어감
+                dto.setDate(rs.getDate("d_date"));
 
                 dto.setTitle(rs.getString("d_title"));
                 dto.setTxt(rs.getString("d_txt"));
@@ -190,6 +188,54 @@ public class DiaryDAO {
         }
 
 
+
+
+    }
+
+    public void getDiaryDetail(HttpServletRequest req) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBManager.connect();
+
+            // 주소창에서 넘어온 글 번호(no)와 날짜(y, m, d) 챙기기
+            String no = req.getParameter("no");
+            String y = req.getParameter("y");
+            String m = req.getParameter("m");
+            String d = req.getParameter("d");
+
+            // 글 번호로 DB에서 검색!
+            String sql = "SELECT * FROM diary_test WHERE d_no = ?";
+            pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, Integer.parseInt(no));
+            rs = pstmt.executeQuery();
+
+            // 글이 있으면 DTO에 예쁘게 포장
+            if (rs.next()) {
+                DiaryDTO dto = new DiaryDTO();
+                dto.setNo(rs.getInt("d_no"));
+                dto.setId(rs.getString("d_id"));
+                dto.setTitle(rs.getString("d_title"));
+                dto.setTxt(rs.getString("d_txt"));
+                // 날짜 포맷 (필요하다면)
+                dto.setDate(rs.getDate("d_date"));
+
+                // 'diary'라는 이름으로 JSP에 넘겨줌!
+                req.setAttribute("diary", dto);
+            }
+
+            // 뒤로가기 버튼을 위해 날짜 정보도 그대로 다시 넘겨줌
+            req.setAttribute("curYear", y);
+            req.setAttribute("curMonth", m);
+            req.setAttribute("selectedDay", d);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, pstmt, rs);
+        }
     }
 }
 

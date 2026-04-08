@@ -12,7 +12,7 @@ public class DiaryDetailC extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // 1. DAO한테 "저 번호(no) 글 하나만 DB에서 가져와!" 시키기 (이따 DAO에 만들 거예요)
-//        DiaryDAO.DDAO.getDiaryDetail(request);
+        DiaryDAO.DDAO.getDiaryDetail(request);
 
         // 2. 화면 모드를 '상세보기(detail)'로 세팅
         request.setAttribute("showMode", "detail");
