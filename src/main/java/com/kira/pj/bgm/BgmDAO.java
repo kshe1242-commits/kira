@@ -100,24 +100,60 @@ public class BgmDAO {
     }
 
     // ── 트랙 삭제 ─────────────────────────────────────────────
+    // 1. 기존 삭제 메서드 수정 (삭제 후 재정렬 호출)
     public boolean deleteTrack(String uPk, String youtubeId) {
-        String sql = "DELETE FROM bgm_track WHERE u_pk = ? AND youtube_id = ?";
-
+        String deleteSql = "DELETE FROM bgm_track WHERE u_pk = ? AND youtube_id = ?";
         Connection con = null;
         PreparedStatement ps = null;
 
         try {
             con = DBManager.connect();
-            ps = con.prepareStatement(sql);
+            ps = con.prepareStatement(deleteSql);
             ps.setString(1, uPk);
             ps.setString(2, youtubeId);
-            return ps.executeUpdate() == 1;
 
+            int result = ps.executeUpdate();
+            if (result == 1) {
+                reorderTracks(uPk); // ✅ 삭제 성공 시 순서 재정렬 실행
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, ps, null);
+        }
+        return false;
+    }
+
+    // 2. 순서 재정렬 메서드 (항상 1, 2, 3... 순서 유지)
+    private void reorderTracks(String uPk) {
+        // ROWNUM을 이용해 기존 순서대로 1번부터 새로 부여
+        String sql = "UPDATE bgm_track a SET track_order = " +
+                "(SELECT new_order FROM (SELECT rowid as rid, ROW_NUMBER() OVER(ORDER BY track_order) as new_order " +
+                "FROM bgm_track WHERE u_pk = ?) b WHERE a.rowid = b.rid) WHERE u_pk = ?";
+
+        try (Connection con = DBManager.connect();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, uPk);
+            ps.setString(2, uPk);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 3. 시간 업데이트 메서드 (보내주신 파일에 이미 있지만 확인용)
+    public boolean updateTrackDuration(String uPk, String youtubeId, int duration) {
+        String sql = "UPDATE bgm_track SET duration = ? WHERE u_pk = ? AND youtube_id = ?";
+        try (Connection con = DBManager.connect();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, duration);
+            ps.setString(2, uPk);
+            ps.setString(3, youtubeId);
+            return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            DBManager.close(con, ps, null);
         }
     }
 

@@ -16,12 +16,14 @@ window.playerReady = false;
 window.isDefaultPlaylist = true;
 
 const dummyPlaylist = [
-    { title: 'Extras', youtubeId: 'MgWVEKk-KUY', duration: 338, trackOrder: 1 },
-    { title: 'Needygirl Overdose', youtubeId: 'BnkhBwzBqlQ', duration: 214, trackOrder: 2 },
-    { title: '차가운 상어 아가씨', youtubeId: 'wZlv3qDPfjk', duration: 155, trackOrder: 3 },
-    { title: '처형박수 (Execution Clap)', youtubeId: 'YcxhmHEykPg', duration: 194, trackOrder: 4 },
-    { title: 'Legend-Changer', youtubeId: 'Kpf2mmyzuMM', duration: 241, trackOrder: 5 },
+    {title: 'Extras', youtubeId: 'MgWVEKk-KUY', duration: 338, trackOrder: 1},
+    {title: 'Needygirl Overdose', youtubeId: 'BnkhBwzBqlQ', duration: 214, trackOrder: 2},
+    {title: '차가운 상어 아가씨', youtubeId: 'wZlv3qDPfjk', duration: 155, trackOrder: 3},
+    {title: '처형박수 (Execution Clap)', youtubeId: 'YcxhmHEykPg', duration: 194, trackOrder: 4},
+    {title: 'Legend-Changer', youtubeId: 'Kpf2mmyzuMM', duration: 241, trackOrder: 5},
 ];
+
+window.defaultPlaylist = dummyPlaylist.map(track => ({...track}));
 
 function formatTime(sec) {
     const m = Math.floor(sec / 60);
@@ -122,18 +124,78 @@ function initPlayer() {
         width: '0',
         height: '0',
         videoId: playlist[currentIndex].youtubeId,
-        playerVars: { autoplay: 1, controls: 0, rel: 0, playsinline: 1 },
+        playerVars: {autoplay: 1, controls: 0, rel: 0, playsinline: 1},
         events: {
             onReady: (event) => {
                 playerReady = true;
+
+                // ✅ 실제 재생 시간 보정 로직
+                // 유튜브 API에서 실제 길이(초) 가져오기
+                const realDuration = Math.floor(event.target.getDuration());
+                const currentTrack = window.playlist[window.currentIndex];
+
+                // 기존 시간과 실제 시간이 1초 이상 차이 나면 보정 작업 시작
+                if (currentTrack && Math.abs(currentTrack.duration - realDuration) > 1) {
+                    console.log(`[시간 보정] ${currentTrack.title}: ${realDuration}초로 수정 중...`);
+
+                    // 1. 메모리(현재 변수)를 즉시 수정
+                    currentTrack.duration = realDuration;
+
+                    // 2. 서버 DB 업데이트 (PUT 요청)
+                    const params = new URLSearchParams();
+                    params.append('youtubeId', currentTrack.youtubeId);
+                    params.append('duration', realDuration);
+
+                    fetch('/api/bgm?' + params.toString(), {
+                        method: 'PUT'
+                    })
+                        .then(res => res.json())
+                        .then(json => {
+                            if (json.result === 'ok') {
+                                console.log("DB 업데이트 완료");
+                                // ✅ 3. 핵심: DB 저장이 끝났으니 화면 리스트를 다시 그려줌
+                                // 이 함수가 실행되면서 화면의 숫자가 즉시 바뀝니다.
+                                if (typeof renderQueue === 'function') {
+                                    renderQueue();
+                                }
+                            }
+                        })
+                        .catch(err => console.error("업데이트 실패:", err));
+                }
+
                 event.target.playVideo();
                 updateIndexNowPlaying();
                 setInterval(updateIndexNowPlaying, 1000);
                 notifyBgmFrame();
             },
             onStateChange: (e) => {
-                if (e.data === YT.PlayerState.ENDED) playNext();
+                // 1. 영상이 끝났을 때 시간 보정 및 다음 곡 재생
+                if (e.data === YT.PlayerState.ENDED) {
+                    const realDuration = Math.floor(e.target.getDuration());
+                    const currentTrack = window.playlist[window.currentIndex];
 
+                    // 마지막으로 실제 시간 확인 후 다르면 업데이트
+                    if (currentTrack && realDuration > 0 && Math.abs(currentTrack.duration - realDuration) > 1) {
+                        currentTrack.duration = realDuration; // 메모리 갱신
+
+                        // DB 업데이트 (PUT)
+                        const params = new URLSearchParams();
+                        params.append('youtubeId', currentTrack.youtubeId);
+                        params.append('duration', realDuration);
+
+                        fetch('/api/bgm?' + params.toString(), { method: 'PUT' })
+                            .then(() => {
+                                // 화면 갱신 후 다음 곡으로
+                                if (typeof renderQueue === 'function') renderQueue();
+                                playNext();
+                            });
+                    } else {
+                        // 보정할 필요 없으면 바로 다음 곡
+                        playNext();
+                    }
+                }
+
+                // 2. 버튼 텍스트 변경 로직
                 const btn = document.getElementById('bgm-toggle');
                 if (btn) btn.textContent = e.data === YT.PlayerState.PLAYING ? '⏸' : '▶';
 
@@ -147,17 +209,17 @@ function initPlayer() {
 function loadPlaylist(userId) {
 
     currentIndex = restoreCurrentIndex(playlist.length);
-/*
-    // 1) 비로그인 사용자 → 기본 재생목록
-    if (!userId || userId.trim() === '') {
-        playlist = dummyPlaylist;
-        window.isDefaultPlaylist = true;
-        currentIndex = restoreCurrentIndex(dummyPlaylist.length); // playlist 확정 후 복원
-        fetchDone = true;
-        if (apiReady) initPlayer();
-        return;
-    }
-*/
+    /*
+        // 1) 비로그인 사용자 → 기본 재생목록
+        if (!userId || userId.trim() === '') {
+            window.playlist = window.defaultPlaylist.map(track => ({ ...track }));
+            window.isDefaultPlaylist = true;
+            window.currentIndex = restoreCurrentIndex(window.playlist.length); // playlist 확정 후 복원
+            window.fetchDone = true;
+            if (apiReady) initPlayer();
+            return;
+        }
+    */
     // 2) 로그인 사용자 → 무조건 DB 조회
     fetch('/api/bgm')
         .then(r => r.json())

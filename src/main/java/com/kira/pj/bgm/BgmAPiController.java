@@ -54,39 +54,48 @@ public class BgmAPiController extends HttpServlet {
     }
 
     // ── POST: 트랙 추가 ───────────────────────────────────────
+    // BgmAPiController.java의 doPost 수정
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
-
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // ✅ 1. 반드시 맨 윗줄에 인코딩 설정 (일본어/특수문자 방지)
+        req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json;charset=UTF-8");
+
         PrintWriter out = resp.getWriter();
 
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("loginUserPk") == null) {
-            resp.setStatus(401);
-            out.print("{\"result\":\"fail\",\"msg\":\"로그인 필요\"}");
-            return;
+        try {
+            HttpSession session = req.getSession(false);
+            if (session == null || session.getAttribute("loginUserPk") == null) {
+                resp.setStatus(401);
+                out.print("{\"result\":\"fail\",\"msg\":\"로그인이 필요합니다.\"}");
+                return;
+            }
+
+            String uPk = (String) session.getAttribute("loginUserPk");
+            String youtubeId = req.getParameter("youtubeId");
+            String title = req.getParameter("title");
+            String durationStr = req.getParameter("duration");
+
+            // ✅ 2. 값 유효성 검사 (500 에러 방지)
+            if (youtubeId == null || title == null || durationStr == null) {
+                out.print("{\"result\":\"fail\",\"msg\":\"누락된 데이터가 있습니다.\"}");
+                return;
+            }
+
+            BgmTrackVO vo = new BgmTrackVO();
+            vo.setUPk(uPk);
+            vo.setYoutubeId(youtubeId);
+            vo.setTitle(title);
+            vo.setDuration(Integer.parseInt(durationStr));
+
+            BgmDAO.MDAO.insertTrack(vo);
+            out.print("{\"result\":\"ok\"}");
+
+        } catch (Exception e) {
+            // ✅ 3. 에러 발생 시 로그 출력 및 응답
+            e.printStackTrace();
+            out.print("{\"result\":\"fail\",\"msg\":\"서버 내부 오류: " + e.getMessage() + "\"}");
         }
-
-        String uPk       = (String) session.getAttribute("loginUserPk");
-        String youtubeId = req.getParameter("youtubeId");
-        String title     = req.getParameter("title");
-        String durationStr = req.getParameter("duration");
-
-        if (youtubeId == null || title == null || durationStr == null) {
-            resp.setStatus(400);
-            out.print("{\"result\":\"fail\",\"msg\":\"파라미터 누락\"}");
-            return;
-        }
-
-        BgmTrackVO vo = new BgmTrackVO();
-        vo.setUPk(uPk);
-        vo.setYoutubeId(youtubeId);
-        vo.setTitle(title);
-        vo.setDuration(Integer.parseInt(durationStr));
-
-        BgmDAO.MDAO.insertTrack(vo);
-        out.print("{\"result\":\"ok\"}");
     }
 
     // ── DELETE: 트랙 삭제 ─────────────────────────────────────
@@ -120,5 +129,23 @@ public class BgmAPiController extends HttpServlet {
     private String esc(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    // 재생시간 동기화
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json;charset=UTF-8");
+
+        // URL 파라미터로 명시적으로 받기
+        String uPk = (String) req.getSession().getAttribute("loginUserPk");
+        String youtubeId = req.getParameter("youtubeId");
+        String durationStr = req.getParameter("duration");
+
+        if (uPk != null && youtubeId != null && durationStr != null) {
+            int duration = Integer.parseInt(durationStr);
+            boolean ok = BgmDAO.MDAO.updateTrackDuration(uPk, youtubeId, duration);
+            resp.getWriter().print("{\"result\":\"" + (ok ? "ok" : "fail") + "\"}");
+        }
     }
 }

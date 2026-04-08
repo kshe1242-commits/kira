@@ -31,7 +31,8 @@
 
     <%-- ── 곡 추가 버튼 영역 ── --%>
     <div class="bgm-add-row">
-        <span class="bgm-queue-label">재생목록</span>
+        <div id="bgm-queue-header" class="bgm-queue-header"></div>
+<%--        <span class="bgm-queue-label">재생목록</span>--%>
         <br>
         <button class="bgm-add-btn" id="bgm-add-btn" title="곡 추가">
             ＋ 곡 추가
@@ -39,20 +40,35 @@
     </div>
 
     <%-- ── 재생목록 ── --%>
-    <div id="bgm-queue-header" class="bgm-queue-header"></div>
-
     <div id="bgm-queue-list"></div>
 
     <%-- ── 곡 추가 모달 ── --%>
-    <div id="bgm-modal-overlay" class="bgm-modal-overlay" style="display:none;">
+    <div id="bgm-add-modal" class="bgm-modal-overlay" style="display:none;">
         <div class="bgm-modal">
-            <div class="bgm-modal-title">♪ 곡 추가</div>
-            <input id="bgm-input-id"    class="bgm-modal-input" type="text" placeholder="YouTube ID (예: 5y_KJAg8bHI)">
-            <input id="bgm-input-title" class="bgm-modal-input" type="text" placeholder="곡 제목">
-            <input id="bgm-input-dur"   class="bgm-modal-input" type="number" placeholder="재생시간 (초)">
-            <div class="bgm-modal-btns">
-                <button class="bgm-modal-cancel" id="bgm-modal-cancel">취소</button>
-                <button class="bgm-modal-submit" id="bgm-modal-submit">추가</button>
+            <div class="bgm-modal-title">🎵 곡 추가하기</div>
+
+            <input id="bgm-add-url" class="bgm-modal-input" type="text" placeholder="YouTube URL을 붙여넣어요" />
+
+            <div id="bgm-duration-input-row" style="display:none; margin-top: 15px; margin-bottom: 10px; gap: 8px; justify-content: center; align-items: center; font-family: 'Gaegu', sans-serif;">
+                <span style="font-size: 0.9em; color: #666;">재생 시간:</span>
+                <input id="bgm-input-min" type="number" min="0" placeholder="0" style="width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center;"> 분
+                <input id="bgm-input-sec" type="number" min="0" max="59" placeholder="0" style="width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; text-align: center;"> 초
+            </div>
+
+            <div id="bgm-add-preview" class="bgm-add-preview" style="display:none;">
+                <img id="bgm-preview-thumb" src="" alt="썸네일" class="bgm-preview-thumb" />
+                <div class="bgm-preview-info">
+                    <div id="bgm-preview-title" class="bgm-preview-title" style="font-weight: bold; margin-bottom: 5px;"></div>
+                    <span id="bgm-preview-duration" class="bgm-preview-duration" style="font-size: 0.85em; color: #888;"></span>
+                </div>
+            </div>
+
+            <div id="bgm-add-msg" class="bgm-add-msg" style="display:none; margin-top: 10px;"></div>
+
+            <div class="bgm-modal-btns" style="margin-top: 20px;">
+                <button id="bgm-preview-btn" class="bgm-add-btn" onclick="bgmPreview()">미리보기</button>
+                <button id="bgm-confirm-btn" class="bgm-add-btn bgm-confirm-btn" style="display:none;" onclick="bgmConfirmAdd()">추가하기</button>
+                <button class="bgm-cancel-btn" onclick="closeBgmModal()">닫기</button>
             </div>
         </div>
     </div>

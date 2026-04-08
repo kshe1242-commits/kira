@@ -400,6 +400,75 @@ body {
 
 .bgm-modal-submit:hover { background: linear-gradient(135deg, #f7cfcd, #ee99aa55); }
 
+/* ── 곡 추가 모달 내부 (신규) ── */
+.bgm-add-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #fdf6ec;
+    border-radius: 10px;
+    border: 1px dashed #f2c0bd;
+}
+
+.bgm-preview-thumb {
+    width: 64px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #f0eee8;
+}
+
+.bgm-preview-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.bgm-preview-title {
+    font-size: 13px;
+    color: #5a4a3a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+.bgm-preview-duration {
+    font-size: 11px;
+    color: #b0a090;
+}
+
+.bgm-add-msg {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+.bgm-add-msg.error { background: #fce8e8; color: #c07070; }
+.bgm-add-msg.info  { background: #f0f4ff; color: #6080c0; }
+
+.bgm-confirm-btn {
+    background: linear-gradient(135deg, #d4eaf5, #a8d8ea) !important;
+    color: #3a7a9a !important;
+    border-color: #a8d8ea !important;
+}
+
+.bgm-cancel-btn {
+    font-family: "Gaegu", cursive;
+    font-size: 13px;
+    color: #b0a090;
+    background: transparent;
+    border: 1px solid #eee0d0;
+    border-radius: 20px;
+    padding: 4px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.bgm-cancel-btn:hover { background: #f5f0ea; }
+
 /* ── 재생목록 헤더 (더미/개인 구분) ── */
 .bgm-queue-header {
     padding: 4px 2px 6px;

@@ -9,7 +9,6 @@ create table userReg(
 );
 select * from USERREG;
 
-<<<<<<< HEAD
 insert into USERREG values('test1test1test1','DongMin','2001-01-01','test123','test123','DongMin','2026-03-31','test@email.com');
 
 insert into USERREG values('user01', '김철수', '1995-05-12', 'pass01', 'pass01', '철수쓰', '2026-04-01', 'chulsoo@email.com');
@@ -33,6 +32,4 @@ insert into USERREG values('aws_cloud', '구클라', '1989-11-11', 'aws123', 'aw
 insert into USERREG values('git_hub', '허깃헙', '2000-01-20', 'git123', 'git123', '1일1커밋', '2026-04-11', 'github@email.com');
 insert into USERREG values('linux_user', '황리눅', '1994-04-04', 'linux1', 'linux1', '우분투러버', '2026-04-12', 'linux@email.com');
 
-=======
 DELETE FROM userReg WHERE u_id = 'test2';
->>>>>>> 9318867042de181002389cf7fc7c8f9226ee87dc
