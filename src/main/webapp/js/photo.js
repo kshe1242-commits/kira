@@ -1,4 +1,3 @@
-
 let photoData = [];
 
 // =============================================
@@ -139,6 +138,7 @@ function buildFeedCard(item, index) {
     </div>
     `;
 }
+
 // =============================================
 // 인라인 편집: 제목
 // =============================================
@@ -191,7 +191,7 @@ function applyImgEdit(index, event) {
     const file = event.target.files[0];
     if (!file) return;
     const newUrl = URL.createObjectURL(file);
-    photoData[index].imgUrl  = newUrl;
+    photoData[index].imgUrl = newUrl;
     photoData[index].imgName = file.name;
     document.getElementById(`detail-img-${index}`).src = newUrl;
 }
@@ -282,7 +282,7 @@ function previewAddImage(event) {
 }
 
 async function addPhoto() {
-    const title   = document.getElementById('addTitle').value.trim();
+    const title = document.getElementById('addTitle').value.trim();
     const content = document.getElementById('addContent').value.trim();
     // 1. 값 검증 (파일은 Supabase로 가니까 여기서 제외)
     if (!title || !content) {
@@ -305,10 +305,11 @@ async function addPhoto() {
             body: params // application/x-www-form-urlencoded 형식으로 전송됨
         });
         console.log(response.ok);
-            // 5. 서블릿에서 응답한 최신 DB 데이터(JSON) 받기
-            const row = await response.json();
+        // 5. 서블릿에서 응답한 최신 DB 데이터(JSON) 받기
+        const text = await response.text();
+        const row = parseInt(text);
 
-        if (row) {
+        if (row > 0) {
             // 6. 성공 처리 및 화면 갱신
             closeAddModal();
 
@@ -325,16 +326,33 @@ async function addPhoto() {
     }
 }
 
-function deletePhoto(index) {
+async function deletePhoto(index) {
+    const imgName = photoData[index].imgName;
     if (!confirm('이 게시글을 삭제할까요?')) return;
+    const del = await deleteSupabase(imgName);
 
-    // 배열에서 해당 항목 삭제
-    photoData.splice(index, 1);
-
-    // TODO: DB 연동 시 → fetch('photo-delete?id=...', { method:'DELETE' })
-
-    // 삭제 후 피드 다시 그리기
-    renderFeedView();
+    try {
+        const response = await fetch(`/photo-data?imgName=${encodeURIComponent(imgName)}`, {
+            method: 'DELETE'
+        });
+        console.log(response.ok);
+        // 5. 서블릿에서 응답한 최신 DB 데이터(JSON) 받기
+        const text = await response.text(); //response가 그냥 텍스트에요
+        const row = parseInt(text);
+        if (row > 0) {
+            // 6. 성공 처리 및 화면 갱신
+            closeAddModal();
+            alert('사진이 성공적으로 삭제되었습니다!');
+            // 데이터를 받아와서 렌더링하는 함수 호출
+            // (renderFeedView가 전역 데이터를 쓰는지, 인자를 받는지에 따라 맞게 사용하세요)
+            loadPhoto()
+        } else {
+            alert('DB 삭제에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('서버 통신 중 오류가 발생했습니다.');
+    }
 
 }
 
@@ -351,15 +369,36 @@ async function uploadSupabase() {
         });
 
         if (!response.ok) {
-            alert('업로드에 실패했습니다.');
+            alert('클라우드 업로드에 실패했습니다.');
             return null;
         }
 
         // 서버에서 {"url": "https://..."} 형식으로 반환한다고 가정
         const text = await response.text();  // 서버에서 단순 문자열
-        const data = { url: text };
+        const data = {url: text};
 
         return data; // 이렇게 반환해야 addPhoto에서 imgUrl.url 사용 가능
+    } catch (error) {
+        console.error('Error:', error);
+        alert('서버 통신 중 오류가 발생했습니다.');
+        return null;
+    }
+
+
+}
+
+async function deleteSupabase(imgName) {
+
+    try {
+        const response = await fetch(`/supabase?imgName=${encodeURIComponent(imgName)}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            alert('클라우드 삭제에 실패했습니다.');
+            return null;
+        }
+
     } catch (error) {
         console.error('Error:', error);
         alert('서버 통신 중 오류가 발생했습니다.');

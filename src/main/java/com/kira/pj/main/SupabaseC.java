@@ -28,5 +28,9 @@ public class SupabaseC extends HttpServlet {
         resp.getWriter().println(SupabaseModel.uploadSupabase(req));
     }
 
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.getWriter().println(SupabaseModel.deleteSupabase(req));
+    }
+
 
 }
