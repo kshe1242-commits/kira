@@ -11,7 +11,6 @@ import java.util.List;
 @WebServlet( value = "/visitorDel")
 public class VisitorDelC extends HttpServlet {
 
-    // 화면을 보여주는 역할 (조회: Read)
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String vIdStr = request.getParameter("vId");

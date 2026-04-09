@@ -43,19 +43,23 @@
                 <a href="${pageContext.request.contextPath}/logout" class="top-login-btn logout">로그아웃</a>
             </div>
         </div>
-
         <%-- ══ 왼쪽: 프로필 + 메뉴 + 색연필통 ══ --%>
         <div class="left-col">
-
             <div class="profile">
+                <%-- profile-card 시작 (여기에 인라인 스타일 절대 넣지 마라!) --%>
                 <div class="profile-card">
+
+                    <%-- 🚨 [수정] 깔끔하게 클래스만 부여한 일촌 버튼 영역 --%>
+                    <div class="friend-btn-wrapper">
+                        <button id="btn-friend-action" class="friend-action-btn" style="display:none;" onclick="handleFriendAction()"></button>
+                    </div>
+
                     <div class="profile-photo">🌬️</div>
                     <div class="profile-name">${sessionScope.loginUserNickname}</div>
                     <div class="profile-mood">
                         햇살 가득한 오후,<br/>기분 좋은 바람... 🍃<br/>
                         <span style="font-size: 11px; color: #c0b0a0">since 2005</span>
                     </div>
-
                 </div>
                 <div class="menu-card">
                     <div class="menu-list">

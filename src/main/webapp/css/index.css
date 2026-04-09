@@ -109,6 +109,7 @@ body::after {
 }
 
 .profile-card {
+    position: relative;
     background: #fffdfa;
     padding: 15px 15px 25px;
     border-radius: 10px;
@@ -118,6 +119,7 @@ body::after {
     transform: rotate(-1.5deg);
     position: relative;
     margin-bottom: 20px;
+
 }
 
 .profile-card::before {
@@ -981,4 +983,27 @@ body::after {
     font-size: 12px;
     color: #a29bfe;
     margin-top: 2px;
+}
+/* 일촌 버튼 위치 강제 고정 (무조건 맨 위로) */
+.friend-btn-wrapper {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 999;
+}
+
+/* 일촌 버튼 디자인 */
+.friend-action-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-family: 'Gaegu', cursive;
+    cursor: pointer;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+.friend-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 1px 3px 5px rgba(0,0,0,0.15);
 }
