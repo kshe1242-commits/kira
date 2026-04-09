@@ -25,6 +25,7 @@
     <script src="js/diary.js"></script>
     <script src="js/visitor.js"></script>
     <script src="js/friend.js"></script>
+    <script src="js/message.js"></script>
     <script defer src="js/ajax.js"></script>
     <script defer src="js/main.js"></script>
 
@@ -88,10 +89,11 @@
                         <div
                                 class="menu-item ${content eq 'board/board.jsp' ? 'active' : ''}"
                                 data-src="${pageContext.request.contextPath}/board/board.jsp"
-                        >
-                            방명록
+                        >방명록
                         </div>
                         <div class="menu-item" data-src="${pageContext.request.contextPath}friend/friend.jsp">일촌목록</div>
+                        <div class="menu-item" data-src="${pageContext.request.contextPath}message/message.jsp">쪽지함
+                        </div>
                     </div>
                 </div>
 
@@ -155,6 +157,7 @@
                     방명록
                 </div>
                 <div class="nb-tab" data-src="${pageContext.request.contextPath}friend/friend.jsp">일촌목록</div>
+                <div class="nb-tab" data-src="${pageContext.request.contextPath}message/message.jsp">쪽지함</div>
 
             </div>
 
