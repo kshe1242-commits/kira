@@ -27,7 +27,7 @@ import javax.servlet.annotation.*;
 //            response.sendRedirect(request.getContextPath() + "/login");
 //            return;
 //        }
-
+//
 //        // 로그인 된 상태면 main 출력
 //        request.setAttribute("content", "/main.jsp");
 //        request.getRequestDispatcher("/index.jsp").forward(request, response);

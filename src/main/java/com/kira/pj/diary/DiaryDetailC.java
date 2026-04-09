@@ -1,23 +1,53 @@
 package com.kira.pj.diary;
 
+import com.kira.pj.friend.FriendDAO;
+import com.kira.pj.friend.FriendDTO;
+
+import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/diary-detail")
 public class DiaryDetailC extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        // 1. DAO한테 "저 번호(no) 글 하나만 DB에서 가져와!" 시키기 (이따 DAO에 만들 거예요)
         DiaryDAO.DDAO.getDiaryDetail(request);
+        DiaryDTO diary = (DiaryDTO) request.getAttribute("diary");
 
-        // 2. 화면 모드를 '상세보기(detail)'로 세팅
-        request.setAttribute("showMode", "detail");
+        if (diary == null) {
+            response.sendError(404);
+            return;
+        }
 
-        // 3. 다이어리 화면으로 다시 포워딩
+        HttpSession session = request.getSession();
+        String myPk = (String) session.getAttribute("loginUserPk");
+        String writerId = diary.getId(); // 작성자 아이디
+
+        // 여기서도 주인 정보를 세션에서 가져와서 관계를 따져야 합니다.
+        String ownerPk = (String) session.getAttribute("ownerUserPk");
+
+        int relation = 0;
+        if (myPk != null && ownerPk != null) {
+            if (myPk.equals(ownerPk)) relation = 2;
+            else {
+                FriendDAO fdao = new FriendDAO();
+                FriendDTO fdto = fdao.checkRelation(myPk, ownerPk);
+                if (fdto != null && fdto.getF_status() == 1) relation = 1;
+            }
+        }
+
+        int vis = diary.getVisibility();
+        if ((vis == 0 && relation < 2) || (vis == 1 && relation < 1)) {
+            request.setAttribute("showMode", "error"); // JSP에서 에러 처리
+        } else {
+            DiaryDAO.DDAO.getReplies(request);
+            request.setAttribute("showMode", "detail");
+        }
+
+        // ★ 이 forward 한 줄이 404 에러를 잡는 열쇠입니다!
         request.getRequestDispatcher("diary/diary.jsp").forward(request, response);
     }
 }
