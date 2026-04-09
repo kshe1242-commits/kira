@@ -125,39 +125,57 @@ function loadPage(url) {
 }
 
 function goSearchMain(id, nick) {
-    document.getElementById("search-dropdown").classList.add("hidden");
-    document.getElementById("live-search-input").value = "";
+    // 1. UI 즉시 반응 (검색창 닫기)
+    const dropdown = document.getElementById("search-dropdown");
+    const searchInput = document.getElementById("live-search-input");
+    if (dropdown) dropdown.classList.add("hidden");
+    if (searchInput) searchInput.value = "";
 
+    // 2. 세션에 새 주인 정보 저장 (가장 중요)
     sessionStorage.setItem("currentHostId", id);
     sessionStorage.setItem("currentHostNick", nick);
 
+    // ⭐ 3. 무조건 그 사람의 '홈' 화면으로 강제 이동! (방명록 유지 안 함)
+    loadPage(`/home?ajax=true&host_id=${id}`);
+
+    // 4. 프로필 및 제목 데이터 동기화
     const searchUrl = `/search-main?host_id=${id}`;
     fetch(searchUrl)
         .then((response) => response.json())
         .then((searchData) => {
-            // UI 초기화 및 홈 탭 활성화
+
+            // ⭐ 5. 메뉴와 탭의 활성화 불빛(active)을 강제로 '홈'으로 옮기기
             document.querySelectorAll(".menu-item, .nb-tab").forEach((el) => el.classList.remove("active"));
             document.querySelectorAll(".menu-item, .nb-tab").forEach(el => {
                 const src = el.getAttribute("data-src");
-                if (src && src.includes("home")) el.classList.add("active");
+                // 주소에 'home'이 들어간 메뉴/탭에만 불을 켭니다.
+                if (src && src.includes("home")) {
+                    el.classList.add("active");
+                }
             });
 
-            // 프로필 정보 업데이트
-            document.querySelector(".profile-name").innerText = nick;
+            // [텍스트 업데이트]
+            const profileName = document.querySelector(".profile-name");
+            if (profileName) profileName.innerText = nick;
 
             // 🚨 [방어막] searchData가 아예 null이어도 절대 터지지 않음
             const titleElement = document.querySelector("#host-title");
-            const safeTitle = (searchData && searchData.hompy_title) ? searchData.hompy_title : `${nick}님의 미니홈피`;
-            if (titleElement) titleElement.innerText = `📖 ${safeTitle}`;
+
+            if (titleElement) {
+                titleElement.innerText = searchData.hompy_title || `📖 ${nick}님의 미니홈피`;
+            }
 
             const stElement = document.querySelector("#status-text");
-            const safeMsg = (searchData && searchData.st_message) ? searchData.st_message : "반갑습니다!";
-            if (stElement) stElement.innerHTML = safeMsg;
+            if (stElement) {
+                stElement.innerHTML = searchData.st_message || "반갑습니다. 😊";
+            }
+
 
             const stDate = document.querySelector(".status-since");
             if (stDate && searchData && searchData.st_date) {
                 stDate.innerHTML = `Since ${searchData.st_date.substring(0, 4)}`;
             }
+
 
             // ==========================================================
             // 🚨 위에서 에러가 안 나야만 아래의 방아쇠들이 무사히 당겨진다!
@@ -169,6 +187,7 @@ function goSearchMain(id, nick) {
 
             // 화면을 해당 유저의 홈으로 이동
             loadPage(`/home?ajax=true&host_id=${id}`);
+
         })
         .catch((error) => {
             console.error("파도타기 데이터 로드 실패:", error);
