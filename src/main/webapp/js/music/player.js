@@ -257,9 +257,13 @@ function loadPlaylist(targetPk) {
   const myPk = window.loginUserPk || '';
   const isActuallyMe = (!targetPk || targetPk === myPk);
 
-  // ✅ 조회 대상이 나인지 여부를 loadPlaylist 시점에 확정
+  // ✅ 1. 현재 재생 중인 대상(PK)이 바뀐 건지 확인
+  // 기존에 window.currentPlayingPk 같은 변수가 없다면 새로 정의해서 비교합니다.
+  const currentPk = isActuallyMe ? 'MY' : targetPk;
+  const isSameTarget = (window.lastLoadedPk === currentPk);
 
   window.isMyPlaylist = isActuallyMe;
+  window.lastLoadedPk = currentPk; // 현재 로드한 대상 저장
 
   const url = isActuallyMe
       ? '/api/bgm'
@@ -279,10 +283,18 @@ function loadPlaylist(targetPk) {
         }
 
         window.fetchDone = true;
-        window.currentIndex = 0;
 
+        // ✅ 2. UI는 매번 그리되, 재생 위치는 유지
         if (typeof renderQueue === 'function') renderQueue();
 
+        // ✅ 3. 핵심 수정: 동일한 사람의 목록을 다시 여는 거라면 재생 명령을 내리지 않음
+        if (isSameTarget) {
+          console.log("이미 같은 목록 재생 중 - 상태 유지");
+          return;
+        }
+
+        // 새로운 목록일 때만 처음부터 재생
+        window.currentIndex = 0;
         if (window.ytPlayer && window.playerReady) {
           window.ytPlayer.loadVideoById(window.playlist[0].youtubeId);
         } else if (window.apiReady) {
