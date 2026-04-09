@@ -44,6 +44,6 @@
 <script src="${pageContext.request.contextPath}/js/user/login.js"></script>
 
 
-
+<div id="toast" class="toast"></div>
 </body>
 </html>
