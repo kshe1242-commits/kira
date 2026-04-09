@@ -18,6 +18,7 @@ function loadDiary(url = "diary?ajax=true") {
         .then((html) => {
             // 서버에서 받은 HTML(diary.jsp 내용)을 속지 영역에 넣기
             const contentArea = document.getElementById("notebook-content");
+
             if (contentArea) {
                 contentArea.innerHTML = html;
             }

@@ -40,3 +40,5 @@ ALTER TABLE diary_reply
         FOREIGN KEY (d_no)
             REFERENCES diary_test (d_no)
                 ON DELETE CASCADE;
+
+SELECT * FROM DIARY_TEST;

@@ -1,5 +1,7 @@
 package com.kira.pj.diary;
 
+import com.kira.pj.friend.FriendDAO;
+import com.kira.pj.friend.FriendDTO;
 import com.kira.pj.main.DBManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,43 +20,38 @@ public class DiaryDAO {
     }
 
     public void getCalendar(HttpServletRequest req) {
-
         Calendar cal = Calendar.getInstance();
 
         String y = req.getParameter("y");
         String m = req.getParameter("m");
+        String d = req.getParameter("d");
+        String mode = req.getParameter("mode");
 
-        int year = (y == null) ? cal.get(Calendar.YEAR) : Integer.parseInt(y);
-        int month = (m == null) ? cal.get(Calendar.MONTH) : Integer.parseInt(m) - 1;
+        int year = (y == null || y.equals("")) ? cal.get(Calendar.YEAR) : Integer.parseInt(y);
+        int month = (m == null || m.equals("")) ? cal.get(Calendar.MONTH) : Integer.parseInt(m) - 1;
 
         cal.set(year, month, 1);
-
         int curYear = cal.get(Calendar.YEAR);
         int curMonth = cal.get(Calendar.MONTH);
-
         int startDay = cal.get(Calendar.DAY_OF_WEEK);
         int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
 
+        // [중요] 달력 기본 데이터 세팅 (에러 나기 전에 미리 세팅!)
         req.setAttribute("startDay", startDay);
         req.setAttribute("lastDay", lastDay);
         req.setAttribute("curYear", curYear);
         req.setAttribute("curMonth", curMonth + 1);
-
         req.setAttribute("prevYear", (curMonth == 0) ? curYear - 1 : curYear);
         req.setAttribute("prevMonth", (curMonth == 0) ? 12 : curMonth);
         req.setAttribute("nextYear", (curMonth == 11) ? curYear + 1 : curYear);
         req.setAttribute("nextMonth", (curMonth == 11) ? 1 : curMonth + 2);
 
-        String d = req.getParameter("d");
-        String mode = req.getParameter("mode");
+        String showMode = "calendar";
+        if ("write".equals(mode)) { showMode = "write"; req.setAttribute("selectedDay", d); }
+        else if (d != null && !d.equals("")) { showMode = "list"; req.setAttribute("selectedDay", d); }
+        req.setAttribute("showMode", showMode);
 
-        if ("write".equals(mode)) {
-            req.setAttribute("showMode", "write");
-            req.setAttribute("selectedDay", d);
-        } else if (d != null) {
-            req.setAttribute("showMode", "list");
-            req.setAttribute("selectedDay", d);
-
+        if ("list".equals(showMode)) {
             Connection con = null;
             PreparedStatement pstmt = null;
             ResultSet rs = null;
@@ -62,43 +59,62 @@ public class DiaryDAO {
 
             try {
                 con = DBManager.connect();
-
-                // ★ 세션에서 진짜 로그인한 아이디 꺼내기!
                 HttpSession session = req.getSession();
-                String loginId = (String) session.getAttribute("loginUserId");
+
+                // 세션에서 내 정보 가져오기
+                String myId = (String) session.getAttribute("loginUserId");
+                String myPk = (String) session.getAttribute("loginUserPk");
+
+                // 미니홈피 주인 정보 (없으면 나로 간주)
+                String ownerId = (String) session.getAttribute("ownerUserId");
+                String ownerPk = (String) session.getAttribute("ownerUserPk");
+                if (ownerId == null) ownerId = (myId != null) ? myId : "";
+                if (ownerPk == null) ownerPk = (myPk != null) ? myPk : "";
+
+                // 관계 파악 (0:남남, 1:일촌, 2:본인)
+                int relation = 0;
+                if (myId != null && !myId.isEmpty() && ownerId != null && !ownerId.isEmpty()) {
+                    if (myId.equals(ownerId)) { relation = 2; }
+                    else if (myPk != null && ownerPk != null) {
+                        FriendDAO fdao = new FriendDAO();
+                        FriendDTO fdto = fdao.checkRelation(myPk, ownerPk);
+                        if (fdto != null && fdto.getF_status() == 1) relation = 1;
+                    }
+                }
 
                 String formattedMonth = String.format("%02d", curMonth + 1);
                 String formattedDay = String.format("%02d", Integer.parseInt(d));
                 String fullDate = curYear + "-" + formattedMonth + "-" + formattedDay;
 
-                // ★ 로그인한 사람(d_id)이 쓴 글만 가져오도록 쿼리 수정!
-                // ★ 공개 설정이 2(전체 공개)이거나, 내가 쓴 글인 것 가져오기!
-                String sql = "SELECT * FROM diary_test WHERE TO_CHAR(d_date, 'YYYY-MM-DD') = ? AND (d_visibility = 2 OR d_id = ?) ORDER BY d_no DESC";
+                // SQL 쿼리 (공개범위 필터링)
+                String sql = "SELECT * FROM diary_test WHERE TO_CHAR(d_date, 'YYYY-MM-DD') = ? AND d_id = ? ";
+                if (relation == 2) sql += "AND d_visibility IN (0, 1, 2) ";
+                else if (relation == 1) sql += "AND d_visibility IN (1, 2) ";
+                else sql += "AND d_visibility = 2 ";
+                sql += "ORDER BY d_no DESC";
+
                 pstmt = con.prepareStatement(sql);
                 pstmt.setString(1, fullDate);
-
-// 혹시 로그인을 안 한 상태(null)라면 빈 칸으로 처리해서 에러 방지
-                if(loginId == null) loginId = "";
-                pstmt.setString(2, loginId);
-
+                pstmt.setString(2, ownerId);
                 rs = pstmt.executeQuery();
 
                 while (rs.next()) {
                     DiaryDTO dto = new DiaryDTO();
                     dto.setNo(rs.getInt("d_no"));
+                    dto.setId(rs.getString("d_id").trim());
                     dto.setTitle(rs.getString("d_title"));
                     dto.setTxt(rs.getString("d_txt"));
                     dto.setVisibility(rs.getInt("d_visibility"));
+
+//                    System.out.println("여기 비저빌리티 있어요~!~!"+rs.getInt("d_visibility"));
                     posts.add(dto);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                DBManager.close(con, pstmt, rs);
-            }
+            } catch (Exception e) { e.printStackTrace(); }
+            finally { DBManager.close(con, pstmt, rs); }
+
+
+
             req.setAttribute("posts", posts);
-        } else {
-            req.setAttribute("showMode", "calendar");
         }
     }
 
