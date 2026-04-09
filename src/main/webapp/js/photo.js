@@ -113,8 +113,7 @@ function buildFeedCard(item, index) {
                         height:85px; /* 고정 높이를 주어야 스크롤 판단 기준이 생깁니다 */
                         overflow-y:auto; /* 내용이 넘칠 때만 스크롤 생성 */
                         scrollbar-width: thin; /* (선택) 스크롤바를 얇게 */
-                        ">${item.content}
-            </div>
+                        ">${item.content}</div>
 
             <div style="display:flex; align-items:center; gap:16px;
                         border-top:1px dashed #eee; padding-top:12px; margin-top:auto;">
