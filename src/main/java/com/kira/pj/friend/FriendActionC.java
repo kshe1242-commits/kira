@@ -45,9 +45,6 @@ public class FriendActionC extends HttpServlet {
             } else if ("delete".equals(action)) {
                 result = dao.deleteFriend(myPk, targetPk);
                 // [상황 4] 별명 설정/수정
-            } else if ("alias".equals(action)) {
-                String alias = request.getParameter("alias");
-                result = dao.updateAlias(myPk, targetPk, alias);
             }
 
             // 결과 처리

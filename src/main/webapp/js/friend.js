@@ -172,44 +172,61 @@ function executeFriendAction(action, targetPk) {
     });
 }
 
+// ==========================================
+// 8. 일촌 목록 불러오기 & 화면 그리기 (프라이버시 보호 장착)
+// ==========================================
 function loadFriendList() {
-    // 도화지 껍데기를 먼저 만든다.
-    document.getElementById("notebook-content").innerHTML = `
-        <div style="padding: 20px;">
-            <h3 style="color:#ff7675; font-family:'Gaegu', cursive; margin-bottom: 20px;">💖 나의 일촌 목록</h3>
-            <div id="friend-list-container" style="display:flex; flex-direction:column; gap:10px;">
-                <div class="nb-spinner"></div>
-            </div>
-        </div>
-    `;
+    // 🚨 1단계 [보안 검색대]: 현재 접속 중인 미니홈피 주인의 PK를 확인한다.
+    const savedOwnerPk = sessionStorage.getItem("currentHostId");
+    const targetOwnerPk = savedOwnerPk ? savedOwnerPk : loginUserPk;
 
+    // 🚨 2단계 [차단]: 현재 홈피 주인(targetOwnerPk)과 로그인한 나(loginUserPk)가 다르면?
+    if (targetOwnerPk !== loginUserPk) {
+        // 네가 원했던 바로 그 얼러트 창!
+        alert("본인의 일촌만 확인할 수 있습니다. 🔒");
+
+        // 화면에 빙글빙글 도는 로딩 스피너도 지우고, 철벽 방어 메시지로 덮어버린다.
+        const container = document.getElementById("friend-list-container");
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align:center; color:#c0b0a0; padding:60px 20px; font-size:18px;">
+                    <span style="font-size:30px; display:block; margin-bottom:10px;">🔒</span>
+                    타인의 일촌 목록은 비공개입니다.
+                </div>`;
+        }
+        return; // 🚨 여기서 함수를 강제로 종료! (서버에 데이터 달라고 조르지 않음)
+    }
+
+    // 3단계 [통과]: 내 미니홈피가 맞다면 정상적으로 리스트를 가져온다.
     fetch(`/friendview?action=list`)
         .then(res => res.json())
         .then(list => {
             const container = document.getElementById("friend-list-container");
-            container.innerHTML = "";
+            if (!container) return; // 화면 없으면 중단
 
+            container.innerHTML = ""; // 스피너 지우기
+
+            // 일촌이 없을 때
             if (!list || list.length === 0) {
                 container.innerHTML = `<div style="text-align:center; color:#c0b0a0; padding:30px;">아직 일촌이 없어요. 😢<br>파도타기를 통해 일촌을 맺어보세요!</div>`;
                 return;
             }
 
+            // 일촌이 있을 때 리스트 그리기
             list.forEach(f => {
-                // 별명이 있으면 별명을 메인으로, 없으면 닉네임을 메인으로 쓴다.
-                const displayName = f.alias_name ? `${f.alias_name} <span style="font-size:12px; color:#c0b0a0;">(${f.u_nickname})</span>` : f.u_nickname;
-
                 const html = `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:15px; border-radius:10px; border:1px solid #f2c0bd;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:15px; border-radius:10px; border:1px solid #f2c0bd; box-shadow: 2px 2px 5px rgba(0,0,0,0.02); margin-bottom:10px;">
                     <div style="display:flex; flex-direction:column; gap:5px;">
-                        <span style="font-size:18px; cursor:pointer;" onclick="goSearchMain('${f.u_id}', '${f.friend_pk}', '${f.u_nickname}')">
-                            🌱 <b>${displayName}</b>
+                        
+                        <span style="font-size:18px; cursor:pointer;" onclick="goSearchMain('${f.friend_pk}', '${f.u_nickname}')">
+                            🌱 <b>${f.u_nickname}</b>
                         </span>
+                        
                         <span style="font-size:11px; color:#c0b0a0;">일촌 맺은 날: ${f.f_date}</span>
                     </div>
                     
                     <div style="display:flex; gap:5px;">
-                        <button onclick="editFriendAlias('${f.friend_pk}', '${f.alias_name}')" style="background:#fdcb6e; color:#555; border:none; padding:5px 10px; border-radius:15px; cursor:pointer; font-family:'Gaegu', cursive;">별명</button>
-                        <button onclick="deleteFriendFromList('${f.friend_pk}')" style="background:#ff7675; color:white; border:none; padding:5px 10px; border-radius:15px; cursor:pointer; font-family:'Gaegu', cursive;">끊기</button>
+                        <button onclick="deleteFriendFromList('${f.friend_pk}')" style="background:#ff7675; color:white; border:none; padding:5px 12px; border-radius:15px; cursor:pointer; font-family:'Gaegu', cursive;">일촌 끊기</button>
                     </div>
                 </div>`;
                 container.insertAdjacentHTML('beforeend', html);
@@ -218,28 +235,9 @@ function loadFriendList() {
         .catch(err => console.error("일촌 목록 로딩 실패:", err));
 }
 
-// 별명 수정 함수
-function editFriendAlias(targetPk, currentAlias) {
-    const newAlias = prompt("이 일촌의 새로운 별명을 입력해주세요! (비워두면 삭제됩니다)", currentAlias);
-    if (newAlias === null) return; // 취소 누름
-
-    const params = new URLSearchParams({
-        action: "alias",
-        targetPk: targetPk,
-        alias: newAlias.trim()
-    });
-
-    fetch('/friendaction', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: params
-    }).then(res => {
-        if (res.ok) loadFriendList(); // 성공 시 리스트 다시 그리기
-        else alert("별명 변경에 실패했습니다.");
-    });
-}
-
-// 리스트에서 바로 일촌 끊기 함수
+// ==========================================
+// 9. 리스트에서 바로 일촌 끊기
+// ==========================================
 function deleteFriendFromList(targetPk) {
     if (!confirm("정말 이 유저와 일촌을 끊으시겠습니까? 😢")) return;
 
@@ -249,7 +247,10 @@ function deleteFriendFromList(targetPk) {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: params
     }).then(res => {
-        if (res.ok) loadFriendList(); // 성공 시 리스트 다시 그리기
-        else alert("삭제에 실패했습니다.");
+        if (res.ok) {
+            loadFriendList(); // 성공 시 리스트 다시 그리기
+        } else {
+            alert("삭제에 실패했습니다.");
+        }
     });
 }
