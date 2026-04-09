@@ -55,8 +55,11 @@ public class SearchDAO {
         if (host_id == null || host_id.isEmpty()) {
             host_id = (String) request.getAttribute("host_id");
         }
-
-        String sql = "SELECT m.*, (SELECT board_content FROM (SELECT board_content FROM guestboard_test WHERE host_id = ? ORDER BY created_at DESC) WHERE ROWNUM = 1) as latest_gb FROM main_test m WHERE m.host_id = ?";
+        String sql = "SELECT m.*, " +
+                "(SELECT MAX(board_content) KEEP (DENSE_RANK FIRST ORDER BY created_at DESC) " +
+                " FROM guestboard_test WHERE host_id = ?) as latest_gb " +
+                "FROM main_test m WHERE m.host_id = ?";
+//        String sql = "SELECT m.*, (SELECT board_content FROM (SELECT board_content FROM guestboard_test WHERE host_id = ? ORDER BY created_at DESC) WHERE ROWNUM = 1) as latest_gb FROM main_test m WHERE m.host_id = ?";
         try {
             con = DBManager.connect();
             ps = con.prepareStatement(sql);

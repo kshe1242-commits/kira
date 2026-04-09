@@ -115,48 +115,58 @@ function loadPage(url) {
 }
 
 function goSearchMain(id, nick) {
-    if (!id || id === "null") {
-        console.error("아이디가 없어서 파도타기를 할 수 없습니다.");
-        return;
-    }
-    document.getElementById("search-dropdown").classList.add("hidden");
-    document.getElementById("live-search-input").value = "";
+    // 1. UI 즉시 반응 (검색창 닫기)
+    const dropdown = document.getElementById("search-dropdown");
+    const searchInput = document.getElementById("live-search-input");
+    if (dropdown) dropdown.classList.add("hidden");
+    if (searchInput) searchInput.value = "";
 
+    // 2. 세션에 새 주인 정보 저장 (가장 중요)
     sessionStorage.setItem("currentHostId", id);
     sessionStorage.setItem("currentHostNick", nick);
 
+    // ⭐ 3. 무조건 그 사람의 '홈' 화면으로 강제 이동! (방명록 유지 안 함)
+    loadPage(`/home?ajax=true&host_id=${id}`);
+
+    // 4. 프로필 및 제목 데이터 동기화
     const searchUrl = `/search-main?host_id=${id}`;
     fetch(searchUrl)
         .then((response) => response.json())
         .then((searchData) => {
-            // UI 초기화 및 홈 탭 활성화
+
+            // ⭐ 5. 메뉴와 탭의 활성화 불빛(active)을 강제로 '홈'으로 옮기기
             document.querySelectorAll(".menu-item, .nb-tab").forEach((el) => el.classList.remove("active"));
             document.querySelectorAll(".menu-item, .nb-tab").forEach(el => {
                 const src = el.getAttribute("data-src");
-                if (src && src.includes("home")) el.classList.add("active");
+                // 주소에 'home'이 들어간 메뉴/탭에만 불을 켭니다.
+                if (src && src.includes("home")) {
+                    el.classList.add("active");
+                }
             });
 
-            // 프로필 정보 업데이트
-            document.querySelector(".profile-name").innerText = nick;
+            // [텍스트 업데이트]
+            const profileName = document.querySelector(".profile-name");
+            if (profileName) profileName.innerText = nick;
 
             const titleElement = document.querySelector("#host-title");
-            if (titleElement) titleElement.innerText = `📖 ${searchData.hompy_title}`;
+            if (titleElement) {
+                titleElement.innerText = searchData.hompy_title || `📖 ${nick}님의 미니홈피`;
+            }
 
             const stElement = document.querySelector("#status-text");
-            if (stElement) stElement.innerHTML = `${searchData.st_message}`;
+            if (stElement) {
+                stElement.innerHTML = searchData.st_message || "반갑습니다. 😊";
+            }
 
             const stDate = document.querySelector(".status-since");
             if (stDate && searchData.st_date) {
                 stDate.innerHTML = `Since ${searchData.st_date.substring(0, 4)}`;
             }
 
-            // 우측 방문자 위젯 갱신
+            // [우측 방문자 위젯 갱신]
             if (typeof loadRecentVisitors === "function") {
                 loadRecentVisitors();
             }
-
-            // 화면을 해당 유저의 홈으로 이동
-            loadPage(`/home?ajax=true&host_id=${id}`);
         })
         .catch((error) => {
             console.error("파도타기 데이터 로드 실패:", error);
