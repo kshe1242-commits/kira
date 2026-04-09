@@ -44,6 +44,10 @@ public class FriendActionC extends HttpServlet {
                 // [상황 3] 신청을 "거절"하거나 기존 일촌을 "끊을" 때
             } else if ("delete".equals(action)) {
                 result = dao.deleteFriend(myPk, targetPk);
+                // [상황 4] 별명 설정/수정
+            } else if ("alias".equals(action)) {
+                String alias = request.getParameter("alias");
+                result = dao.updateAlias(myPk, targetPk, alias);
             }
 
             // 결과 처리
@@ -53,7 +57,8 @@ public class FriendActionC extends HttpServlet {
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
