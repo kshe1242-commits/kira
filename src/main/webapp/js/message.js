@@ -1,10 +1,24 @@
 // ==========================================
-// 1. 쪽지함 로드 (받은 쪽지 / 보낸 쪽지)
+// 1. 쪽지함 로드 (받은 쪽지 / 보낸 쪽지) + 읽음 처리 기능 포함
 // ==========================================
 function loadMessages(type) {
     // 탭 전환 UI 처리
     document.getElementById('message-write-area').style.display = 'none';
     document.getElementById('message-list-area').style.display = 'block';
+
+    // 🚨 [추가됨] 받은 쪽지함을 누르면 서버에 "나 다 읽었어!" 라고 몰래 편지 보냄
+    if (type === 'received') {
+        fetch('/messageaction', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({action: 'markRead'})
+        }).then(() => {
+            // 읽음 처리 성공 시, 뱃지를 지우기 위해 알림 다시 확인
+            if (typeof checkUnreadMessages === "function") {
+                checkUnreadMessages();
+            }
+        });
+    }
 
     fetch(`/messageview?action=${type}`)
         .then(res => res.json())
@@ -21,7 +35,6 @@ function loadMessages(type) {
 
                     html += `
                     <div style="border-bottom:1px dashed #f2c0bd; padding:10px 0; position:relative;">
-                        
                         <div style="font-size:13px; color:#a29bfe; font-weight:bold; cursor:pointer;" 
                              onclick="goSearchMain('${m.target_pk}', '${m.target_nick}')">
                              
@@ -32,20 +45,18 @@ function loadMessages(type) {
                         <button onclick="deleteMsg('${m.m_pk}', '${type}')" style="position:absolute; right:5px; top:10px; border:none; background:none; cursor:pointer; color:#ff7675; font-size:14px;">✖</button>
                     </div>`;
                 });
-            } // 🚨 네 코드에서 이 괄호가 빠져있었다!
-
+            }
             area.innerHTML = html;
-        }); // 🚨 네 코드에서 이 괄호도 빠져있었다!
+        });
 }
 
 // ==========================================
-// 2. 쪽지 쓰기 화면 열기 (+ 일촌 목록 불러와서 select 태그에 넣기)
+// 2. 쪽지 쓰기 화면 열기
 // ==========================================
 function openWriteMessage(defaultTargetPk = "") {
     document.getElementById('message-list-area').style.display = 'none';
     document.getElementById('message-write-area').style.display = 'block';
 
-    // 기존에 만들어둔 일촌 목록 API 재활용!
     fetch('/friendview?action=list')
         .then(res => res.json())
         .then(list => {
@@ -53,7 +64,6 @@ function openWriteMessage(defaultTargetPk = "") {
             select.innerHTML = '<option value="">💌 받을 일촌을 선택하세요</option>';
 
             list.forEach(f => {
-                // 특정 일촌에게 보내기를 눌렀을 경우 자동 선택되도록 처리
                 const isSelected = (f.friend_pk === defaultTargetPk) ? 'selected' : '';
                 select.innerHTML += `<option value="${f.friend_pk}" ${isSelected}>${f.u_nickname}</option>`;
             });
@@ -87,8 +97,8 @@ function sendMessage() {
         .then(data => {
             if (data.success) {
                 alert("쪽지가 슝~ 전송되었습니다! 🚀");
-                document.getElementById('msg-content').value = ''; // 입력창 비우기
-                loadMessages('sent'); // 보낸 쪽지함으로 자동 이동
+                document.getElementById('msg-content').value = '';
+                loadMessages('sent');
             } else {
                 alert(data.message || "발송 실패");
             }
@@ -109,7 +119,40 @@ function deleteMsg(msgPk, type) {
     })
         .then(res => res.json())
         .then(data => {
-            if (data.success) loadMessages(type); // 삭제 성공 시 리스트 갱신
+            if (data.success) loadMessages(type);
             else alert("삭제 실패!");
         });
 }
+
+// ==========================================
+// 5. 새 쪽지 알림 확인 (빨간 뱃지 달기)
+// ==========================================
+function checkUnreadMessages() {
+    // 로그인한 유저만 작동
+    if (typeof loginUserPk === 'undefined' || !loginUserPk) return;
+
+    fetch('/messageview?action=unreadCount')
+        .then(res => res.json())
+        .then(data => {
+            // 메뉴(좌측)와 탭(중앙)에 있는 '쪽지함' 버튼을 싹 찾는다
+            const msgMenus = document.querySelectorAll('.menu-item[data-src*="message.jsp"], .nb-tab[data-src*="message.jsp"]');
+
+            msgMenus.forEach(item => {
+                // 기존 뱃지 제거
+                const oldBadge = item.querySelector('.msg-badge');
+                if (oldBadge) oldBadge.remove();
+
+                // 안 읽은 쪽지가 있으면 뱃지 추가
+                if (data.count > 0) {
+                    item.innerHTML += `<span class="msg-badge" style="background:#ff7675; color:white; border-radius:50%; padding:2px 6px; font-size:11px; margin-left:5px; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); animation: pop 0.3s ease-in-out;">${data.count}</span>`;
+                }
+            });
+        })
+        .catch(err => console.error("알림 확인 실패:", err));
+}
+
+// 브라우저가 켜지면 뱃지 로직 실행 (10초마다 반복)
+document.addEventListener("DOMContentLoaded", () => {
+    checkUnreadMessages();
+    setInterval(checkUnreadMessages, 10000);
+});
