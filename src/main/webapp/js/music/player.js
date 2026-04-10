@@ -16,29 +16,34 @@ window.playerReady = false;
 window.isDefaultPlaylist = true;
 
 const dummyPlaylist = [
-    {title: "Extras", youtubeId: "MgWVEKk-KUY", duration: 338, trackOrder: 1},
     {
-        title: "Needygirl Overdose",
-        youtubeId: "BnkhBwzBqlQ",
-        duration: 214,
+        title: "BIGBANG - 하루하루(HARU HARU)",
+        youtubeId: "8OAQ6RuYFGE",
+        duration: 323,
+        trackOrder: 1
+    },
+    {
+        title: "미안해서 미안해 (Feat.G.NA) - 김진표",
+        youtubeId: "8Aug4u0dhIU",
+        duration: 220,
         trackOrder: 2,
     },
     {
-        title: "차가운 상어 아가씨",
-        youtubeId: "wZlv3qDPfjk",
-        duration: 155,
+        title: "프리스타일 - Y",
+        youtubeId: "WxUwgAli2Ec",
+        duration: 280,
         trackOrder: 3,
     },
     {
-        title: "처형박수 (Execution Clap)",
-        youtubeId: "YcxhmHEykPg",
-        duration: 194,
+        title: "프라이머리 - 입장정리 (Feat. 최자, Simon D)",
+        youtubeId: "aMbIW_Z3P2g",
+        duration: 297,
         trackOrder: 4,
     },
     {
-        title: "Legend-Changer",
-        youtubeId: "Kpf2mmyzuMM",
-        duration: 241,
+        title: "BIGBANG - 거짓말(LIE)",
+        youtubeId: "NeDeZUqNiVo",
+        duration: 294,
         trackOrder: 5,
     },
 ];
