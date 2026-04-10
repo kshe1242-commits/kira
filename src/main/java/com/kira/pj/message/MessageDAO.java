@@ -164,4 +164,47 @@ public class MessageDAO {
             DBManager.close(con, pstmt, null);
         }
     }
+
+    // =================================================================
+    // 5. 안 읽은 쪽지 개수 가져오기 (알림 뱃지용)
+    // =================================================================
+    public int getUnreadCount(String myPk) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        // 내 쪽지 중 안 지웠고(0) 안 읽은(0) 쪽지 개수
+        String sql = "SELECT COUNT(*) FROM private_message WHERE m_receiver_pk = ? AND m_read_status = 0 AND m_receiver_del = 0";
+        try {
+            con = DBManager.connect();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, myPk);
+            rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, pstmt, rs);
+        }
+        return 0;
+    }
+
+    // =================================================================
+    // 6. 쪽지 전체 읽음 처리 (받은 쪽지함을 열었을 때 실행)
+    // =================================================================
+    public int markAsRead(String myPk) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        String sql = "UPDATE private_message SET m_read_status = 1 WHERE m_receiver_pk = ? AND m_read_status = 0";
+        try {
+            con = DBManager.connect();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, myPk);
+            return pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        } finally {
+            DBManager.close(con, pstmt, null);
+        }
+    }
 }
