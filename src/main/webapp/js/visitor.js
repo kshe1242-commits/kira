@@ -3,8 +3,6 @@ let globalCurrentPage = 1;
 // =========================================================================
 // [핵심 함수] 현재 미니홈피의 주인이 누구인지(ownerPk) 알아내는 공통 함수
 // =========================================================================
-
-
 function getTargetOwnerPk() {
     // 1. 파도타기 중인지 확인 (세션 스토리지에 남의 PK가 메모되어 있는지 확인)
     let savedOwnerPk = sessionStorage.getItem("currentHostId");
@@ -23,18 +21,27 @@ document.addEventListener("submit", function (e) {
     if (e.target && e.target.id === "v-visitor-form") {
         e.preventDefault();
 
-        const emojiSelect = document.getElementById("v-visitor-emoji");
-        const currentOwnerPk = getTargetOwnerPk(); // 핵심 함수 호출!
+        const currentOwnerPk = getTargetOwnerPk();
 
-        // 접속 대상(주인)의 식별자가 없으면 에러 처리
         if (!currentOwnerPk) {
             alert("잘못된 접근입니다. (미니홈피 주인을 찾을 수 없음)");
             return;
         }
 
+        const emojiSelect = document.getElementById("v-visitor-emoji");
+        let selectedEmoji;
+
+        // 사용자가 선택한 값이 있으면 그것을 사용하고, 없으면 1~4 사이의 랜덤 값을 생성하여 할당한다.
+        if (emojiSelect && emojiSelect.value) {
+            selectedEmoji = emojiSelect.value;
+        } else {
+            // Math.random()은 0 이상 1 미만의 난수를 반환. 이를 이용해 1~4 정수 추출.
+            selectedEmoji = String(Math.floor(Math.random() * 4) + 1);
+        }
+
         const requestData = new URLSearchParams({
-            visitorEmoji: emojiSelect ? emojiSelect.value : "1",
-            ownerPk: currentOwnerPk // 서버로 확실하게 ownerPk를 보냄
+            visitorEmoji: selectedEmoji,
+            ownerPk: currentOwnerPk
         });
 
         fetch("visitor", {
@@ -44,7 +51,6 @@ document.addEventListener("submit", function (e) {
         })
             .then(response => {
                 if (response.ok) {
-                    // 등록 성공 시 1페이지와 우측 위젯을 다시 새로고침
                     fetchVisitors(1);
                     loadRecentVisitors();
                 } else if (response.status === 401) {
@@ -56,6 +62,7 @@ document.addEventListener("submit", function (e) {
             .catch(error => console.error("Error:", error));
     }
 });
+
 // =========================================================================
 // 2. 방문자 목록 불러오기 (GET 비동기) - 캐시 차단 완벽 적용
 // =========================================================================
@@ -67,10 +74,8 @@ function fetchVisitors(page) {
         return;
     }
 
-    // [핵심] 리스트를 불러올 때도 무조건 최신 데이터를 가져오도록 시간값을 꼬리표로 붙임
     const noCache = new Date().getTime();
 
-    // fetch URL 끝에 &t=시간 붙이고, 헤더로 캐시 금지 명령 추가
     fetch(`visitor?reqType=json&p=${page}&ownerPk=${currentOwnerPk}&t=${noCache}`, {
         method: 'GET',
         headers: {
@@ -137,13 +142,13 @@ function loadRecentVisitors() {
                 });
             }
 
-            // 🚨 [핵심 타이밍] 리스트를 화면에 다 그린 직후, 조회수를 갱신하는 방아쇠를 당긴다!
             if (typeof updateHitCount === "function") {
                 updateHitCount();
             }
         })
         .catch(err => console.error("최근 방문자 로딩 실패:", err));
 }
+
 // =========================================================================
 // 4. 방명록 삭제 로직
 // =========================================================================
@@ -159,7 +164,7 @@ function deleteVisitor(vId) {
 }
 
 // =========================================================================
-// 5. UI 렌더링 함수들 (이전과 동일)
+// 5. UI 렌더링 함수들
 // =========================================================================
 function renderPosts(visitorList) {
     const container = document.getElementById("v-posts-container");
@@ -181,7 +186,6 @@ function renderPosts(visitorList) {
         else if (v.v_emoji == 3) emoji = '🐱';
         else if (v.v_emoji == 4) emoji = '🐶';
 
-        // [핵심 수정] 화면에 출력되는 이름과, goSearchMain의 두 번째 파라미터를 v_writer_nickname으로 교체했다.
         html += `
             <div class="v-post-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:#fff; border-radius:10px; border:1px solid #f0eee5; box-shadow: 2px 2px 5px rgba(0,0,0,0.02);">
                 <div style="display:flex; align-items:center; gap:15px;">
@@ -223,14 +227,13 @@ function renderPaging(visitorList, currentPage) {
     }
 
     container.innerHTML = html;
-}// =========================================================================
+}
+
+// =========================================================================
 // 6. 방문자(발도장) 초기 로딩 함수
 // =========================================================================
 function initVisitorLog() {
-    // 1. 방문자 1페이지 리스트 불러오기
     fetchVisitors(1);
-
-    // 2. 우측 최근 방문자 위젯 불러오기 (이때 백엔드에서 자동 발도장이 찍힘)
     loadRecentVisitors();
 }
 
@@ -238,17 +241,14 @@ function initVisitorLog() {
 function vloadPage(url) {
     if (!url) return;
 
-    // 1. 현재 미니홈피 주인의 PK를 가져온다.
     const savedOwnerPk = sessionStorage.getItem("currentHostId");
     const targetOwnerPk = savedOwnerPk ? savedOwnerPk : loginUserId;
 
-    // 2. URL에 꼬리표(ownerPk)를 붙인다.
     let fetchUrl = url;
     if (targetOwnerPk) {
         fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 'ownerPk=' + targetOwnerPk;
     }
 
-    // 3. 서버 통신 (★ fetch는 반드시 이거 하나만 있어야 한다 ★)
     fetch(fetchUrl)
         .then((response) => {
             if (!response.ok) {
@@ -262,7 +262,6 @@ function vloadPage(url) {
             const notebook = document.getElementById("notebook");
             if (notebook) notebook.classList.remove("is-visitor");
 
-            // 라우터 실행 (여기가 실행되어야 리스트가 뜬다!)
             for (const path in pageRoutes) {
                 if (url.includes(path)) {
                     const route = pageRoutes[path];
@@ -280,5 +279,4 @@ function vloadPage(url) {
                     <button onclick="loadPage('${url}')">다시 시도</button>
                 </div>`;
         });
-
 }

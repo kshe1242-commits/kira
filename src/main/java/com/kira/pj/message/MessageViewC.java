@@ -1,4 +1,4 @@
-package com.kira.pj.message; // 본인 프로젝트 패키지명에 맞게 수정하세요
+package com.kira.pj.message;
 
 import com.google.gson.Gson;
 import javax.servlet.ServletException;
@@ -15,37 +15,33 @@ import java.util.Map;
 public class MessageViewC extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 1. 한글 깨짐 방지 및 JSON 응답 세팅
         response.setContentType("application/json; charset=UTF-8");
 
-        // 2. 세션 검사 (로그인 안 되어있으면 차단)
         HttpSession session = request.getSession();
-        String myPk = (String) session.getAttribute("loginUserPk");
+        // PK 대신 직관적인 ID 사용
+        String myId = (String) session.getAttribute("loginUserId");
 
-        if (myPk == null) {
-            response.getWriter().print("[]"); // 프론트엔드 에러 방지용 빈 배열 반환
+        if (myId == null) {
+            response.getWriter().print("[]");
             return;
         }
 
         String action = request.getParameter("action");
         MessageDAO dao = new MessageDAO();
 
-        // 🚨 [새로운 기능 1] 안 읽은 쪽지 개수 알려주기 (빨간 뱃지용)
         if ("unreadCount".equals(action)) {
-            int count = dao.getUnreadCount(myPk);
+            int count = dao.getUnreadCount(myId);
             response.getWriter().print("{\"count\": " + count + "}");
-            return; // 여기서 바로 통신 종료
+            return;
         }
 
-        // 3. 받은 쪽지함 / 보낸 쪽지함 리스트 가져오기
         List<Map<String, String>> list = null;
         if ("received".equals(action)) {
-            list = dao.getReceivedMessages(myPk);
+            list = dao.getReceivedMessages(myId);
         } else if ("sent".equals(action)) {
-            list = dao.getSentMessages(myPk);
+            list = dao.getSentMessages(myId);
         }
 
-        // 4. JSON으로 변환해서 프론트엔드로 발사!
         if (list != null) {
             response.getWriter().print(new Gson().toJson(list));
         } else {

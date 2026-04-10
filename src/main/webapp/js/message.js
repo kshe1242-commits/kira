@@ -1,19 +1,13 @@
-// ==========================================
-// 1. 쪽지함 로드 (받은 쪽지 / 보낸 쪽지) + 읽음 처리 기능 포함
-// ==========================================
 function loadMessages(type) {
-    // 탭 전환 UI 처리
     document.getElementById('message-write-area').style.display = 'none';
     document.getElementById('message-list-area').style.display = 'block';
 
-    // 🚨 [추가됨] 받은 쪽지함을 누르면 서버에 "나 다 읽었어!" 라고 몰래 편지 보냄
     if (type === 'received') {
         fetch('/messageaction', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: new URLSearchParams({action: 'markRead'})
         }).then(() => {
-            // 읽음 처리 성공 시, 뱃지를 지우기 위해 알림 다시 확인
             if (typeof checkUnreadMessages === "function") {
                 checkUnreadMessages();
             }
@@ -29,14 +23,14 @@ function loadMessages(type) {
             if (!list || list.length === 0) {
                 html = `<div style='text-align:center; padding:50px; color:#c0b0a0;'>쪽지가 없습니다. 텅~ 🍃</div>`;
             } else {
-                // 쪽지가 있을 때 리스트 그리기
                 list.forEach(m => {
                     const targetName = type === 'received' ? `From: ${m.target_nick}` : `To: ${m.target_nick}`;
 
+                    // 대상의 ID (target_id)를 사용하여 goSearchMain 실행
                     html += `
                     <div style="border-bottom:1px dashed #f2c0bd; padding:10px 0; position:relative;">
                         <div style="font-size:13px; color:#a29bfe; font-weight:bold; cursor:pointer;" 
-                             onclick="goSearchMain('${m.target_pk}', '${m.target_nick}')">
+                             onclick="goSearchMain('${m.target_id}', '${m.target_nick}')">
                              
                             ${targetName} <span style="color:#c0b0a0; font-weight:normal; font-size:11px; margin-left:10px;">${m.m_date}</span>
                         </div>
@@ -50,10 +44,7 @@ function loadMessages(type) {
         });
 }
 
-// ==========================================
-// 2. 쪽지 쓰기 화면 열기
-// ==========================================
-function openWriteMessage(defaultTargetPk = "") {
+function openWriteMessage(defaultTargetId = "") {
     document.getElementById('message-list-area').style.display = 'none';
     document.getElementById('message-write-area').style.display = 'block';
 
@@ -64,20 +55,19 @@ function openWriteMessage(defaultTargetPk = "") {
             select.innerHTML = '<option value="">💌 받을 일촌을 선택하세요</option>';
 
             list.forEach(f => {
-                const isSelected = (f.friend_pk === defaultTargetPk) ? 'selected' : '';
-                select.innerHTML += `<option value="${f.friend_pk}" ${isSelected}>${f.u_nickname}</option>`;
+                // 친구 목록에서 받아온 u_id를 드롭다운 value로 설정
+                const isSelected = (f.u_id === defaultTargetId) ? 'selected' : '';
+                select.innerHTML += `<option value="${f.u_id}" ${isSelected}>${f.u_nickname}</option>`;
             });
         });
 }
 
-// ==========================================
-// 3. 쪽지 전송 (서버로 쏘기)
-// ==========================================
 function sendMessage() {
-    const receiverPk = document.getElementById('msg-receiver-select').value;
+    // receiverId 획득
+    const receiverId = document.getElementById('msg-receiver-select').value;
     const content = document.getElementById('msg-content').value;
 
-    if (!receiverPk) {
+    if (!receiverId) {
         alert('받을 사람(일촌)을 선택해주세요!');
         return;
     }
@@ -86,7 +76,8 @@ function sendMessage() {
         return;
     }
 
-    const params = new URLSearchParams({action: 'send', receiverPk: receiverPk, content: content});
+    // 서버에 전송하는 변수명도 receiverId로 변경
+    const params = new URLSearchParams({action: 'send', receiverId: receiverId, content: content});
 
     fetch('/messageaction', {
         method: 'POST',
@@ -105,12 +96,10 @@ function sendMessage() {
         });
 }
 
-// ==========================================
-// 4. 쪽지 삭제
-// ==========================================
 function deleteMsg(msgPk, type) {
     if (!confirm("이 쪽지를 삭제할까요? (상대방의 쪽지함에서는 지워지지 않습니다)")) return;
 
+    // msgPk는 쪽지 자체의 식별자(NanoID 등)이므로 그대로 유지한다
     const params = new URLSearchParams({action: 'delete', msgPk: msgPk, type: type});
     fetch('/messageaction', {
         method: 'POST',
@@ -124,25 +113,18 @@ function deleteMsg(msgPk, type) {
         });
 }
 
-// ==========================================
-// 5. 새 쪽지 알림 확인 (빨간 뱃지 달기)
-// ==========================================
 function checkUnreadMessages() {
-    // 로그인한 유저만 작동
-    if (typeof loginUserPk === 'undefined' || !loginUserPk) return;
+    if (typeof loginUserId === 'undefined' || !loginUserId) return; // loginUserPk -> loginUserId 로 변경 가능성 대비
 
     fetch('/messageview?action=unreadCount')
         .then(res => res.json())
         .then(data => {
-            // 메뉴(좌측)와 탭(중앙)에 있는 '쪽지함' 버튼을 싹 찾는다
             const msgMenus = document.querySelectorAll('.menu-item[data-src*="message.jsp"], .nb-tab[data-src*="message.jsp"]');
 
             msgMenus.forEach(item => {
-                // 기존 뱃지 제거
                 const oldBadge = item.querySelector('.msg-badge');
                 if (oldBadge) oldBadge.remove();
 
-                // 안 읽은 쪽지가 있으면 뱃지 추가
                 if (data.count > 0) {
                     item.innerHTML += `<span class="msg-badge" style="background:#ff7675; color:white; border-radius:50%; padding:2px 6px; font-size:11px; margin-left:5px; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); animation: pop 0.3s ease-in-out;">${data.count}</span>`;
                 }
@@ -151,7 +133,6 @@ function checkUnreadMessages() {
         .catch(err => console.error("알림 확인 실패:", err));
 }
 
-// 브라우저가 켜지면 뱃지 로직 실행 (10초마다 반복)
 document.addEventListener("DOMContentLoaded", () => {
     checkUnreadMessages();
     setInterval(checkUnreadMessages, 10000);

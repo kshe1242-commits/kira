@@ -1,4 +1,4 @@
-package com.kira.pj.message; // 패키지명은 네 프로젝트에 맞게 수정해라
+package com.kira.pj.message;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.kira.pj.friend.FriendDAO;
@@ -15,22 +15,47 @@ import java.util.Map;
 
 public class MessageDAO {
 
+    // [핵심] ID를 받아 PK를 찾아오는 보조 메서드
+    private String getUserPkById(String userId) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            con = DBManager.connect();
+            String sql = "SELECT u_pk FROM userReg WHERE u_id = ?";
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, userId.trim());
+            rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getString("u_pk");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, pstmt, rs);
+        }
+        return null;
+    }
+
     // =================================================================
     // 1. 쪽지 보내기 (일촌 검문소 탑재)
     // =================================================================
-    public int sendMessage(String senderPk, String receiverPk, String content) {
-        // [비판적 검증] 서버 단에서 무조건 일촌 여부를 2차로 확인한다.
+    public int sendMessage(String senderId, String receiverId, String content) {
+        // 🚨 [수정됨] 일촌 확인은 반드시 'ID' 그대로 진행한다! (FriendDAO가 ID를 쓰기 때문)
         FriendDAO fDao = new FriendDAO();
-        FriendDTO relation = fDao.checkRelation(senderPk, receiverPk);
+        FriendDTO relation = fDao.checkRelation(senderId, receiverId);
 
-        // 남남이거나(null), 상태가 1(일촌)이 아니라면 철벽 방어!
+        // 일촌이 아니면 즉각 차단
         if (relation == null || relation.getF_status() != 1) {
-            return -1; // -1을 반환하면 컨트롤러에서 "일촌만 보낼 수 있습니다"라고 처리하면 됨.
+            return -1;
         }
+
+        // 🚨 통과했다면, 쪽지를 저장하기 위해 DB(private_message)가 요구하는 PK를 조회한다.
+        String senderPk = getUserPkById(senderId);
+        String receiverPk = getUserPkById(receiverId);
+
+        if (senderPk == null || receiverPk == null) return 0;
 
         Connection con = null;
         PreparedStatement pstmt = null;
-        // m_pk는 NanoID로 고유하게 생성
         String sql = "INSERT INTO private_message (m_pk, m_sender_pk, m_receiver_pk, m_content) VALUES (?, ?, ?, ?)";
 
         try {
@@ -50,16 +75,17 @@ public class MessageDAO {
     }
 
     // =================================================================
-    // 2. 받은 쪽지함 조회 (내가 수신자이고, 삭제하지 않은 것)
+    // 2. 받은 쪽지함 조회
     // =================================================================
-    public List<Map<String, String>> getReceivedMessages(String myPk) {
+    public List<Map<String, String>> getReceivedMessages(String myId) {
+        String myPk = getUserPkById(myId);
+        List<Map<String, String>> list = new ArrayList<>();
+        if (myPk == null) return list;
+
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        List<Map<String, String>> list = new ArrayList<>();
 
-        // 발신자의 닉네임을 알기 위해 userReg와 JOIN
-        // [수정 1] SELECT 문에 u.u_id 추가!
         String sql = "SELECT m.m_pk, m.m_sender_pk, u.u_nickname as sender_nick, u.u_id, m.m_content, TO_CHAR(m.m_date, 'YY.MM.DD HH24:MI') as m_date_fmt, m.m_read_status "
                 + "FROM private_message m "
                 + "JOIN userReg u ON m.m_sender_pk = u.u_pk "
@@ -75,12 +101,10 @@ public class MessageDAO {
             while (rs.next()) {
                 Map<String, String> map = new HashMap<>();
                 map.put("m_pk", rs.getString("m_pk"));
-                map.put("target_pk", rs.getString("m_sender_pk"));
+                // 프론트엔드가 ID로 작동하도록 target_id를 내려줌
+                map.put("target_id", rs.getString("u_id"));
                 map.put("target_nick", rs.getString("sender_nick"));
-
-                // 🚨 [수정 완료] 프론트엔드에서 날짜를 띄울 수 있도록 m_date 추가!
                 map.put("m_date", rs.getString("m_date_fmt"));
-
                 map.put("m_content", rs.getString("m_content"));
                 list.add(map);
             }
@@ -93,15 +117,17 @@ public class MessageDAO {
     }
 
     // =================================================================
-    // 3. 보낸 쪽지함 조회 (내가 발신자이고, 삭제하지 않은 것)
+    // 3. 보낸 쪽지함 조회
     // =================================================================
-    public List<Map<String, String>> getSentMessages(String myPk) {
+    public List<Map<String, String>> getSentMessages(String myId) {
+        String myPk = getUserPkById(myId);
+        List<Map<String, String>> list = new ArrayList<>();
+        if (myPk == null) return list;
+
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        List<Map<String, String>> list = new ArrayList<>();
 
-        // 수신자의 닉네임을 알기 위해 userReg와 JOIN
         String sql = "SELECT m.m_pk, m.m_receiver_pk, u.u_nickname as receiver_nick, u.u_id, m.m_content, TO_CHAR(m.m_date, 'YY.MM.DD HH24:MI') as m_date_fmt, m.m_read_status "
                 + "FROM private_message m "
                 + "JOIN userReg u ON m.m_receiver_pk = u.u_pk "
@@ -117,12 +143,10 @@ public class MessageDAO {
             while (rs.next()) {
                 Map<String, String> map = new HashMap<>();
                 map.put("m_pk", rs.getString("m_pk"));
-                map.put("target_pk", rs.getString("m_receiver_pk"));
+                // 프론트엔드가 ID로 작동하도록 target_id를 내려줌
+                map.put("target_id", rs.getString("u_id"));
                 map.put("target_nick", rs.getString("receiver_nick"));
-
-                // 🚨 [수정 완료] 프론트엔드에서 날짜를 띄울 수 있도록 m_date 추가!
                 map.put("m_date", rs.getString("m_date_fmt"));
-
                 map.put("m_content", rs.getString("m_content"));
                 list.add(map);
             }
@@ -135,20 +159,22 @@ public class MessageDAO {
     }
 
     // =================================================================
-    // 4. 쪽지 삭제 (양방향 분기 처리)
+    // 4. 쪽지 삭제
     // =================================================================
-    public int deleteMessage(String msgPk, String myPk, String type) {
+    public int deleteMessage(String msgPk, String myId, String type) {
+        String myPk = getUserPkById(myId);
+        if (myPk == null) return 0;
+
         Connection con = null;
         PreparedStatement pstmt = null;
         String sql = "";
 
-        // type이 received면 받은 쪽지함에서 지운 것, sent면 보낸 쪽지함에서 지운 것
         if ("received".equals(type)) {
             sql = "UPDATE private_message SET m_receiver_del = 1 WHERE m_pk = ? AND m_receiver_pk = ?";
         } else if ("sent".equals(type)) {
             sql = "UPDATE private_message SET m_sender_del = 1 WHERE m_pk = ? AND m_sender_pk = ?";
         } else {
-            return 0; // 잘못된 요청
+            return 0;
         }
 
         try {
@@ -166,13 +192,15 @@ public class MessageDAO {
     }
 
     // =================================================================
-    // 5. 안 읽은 쪽지 개수 가져오기 (알림 뱃지용)
+    // 5. 안 읽은 쪽지 개수 가져오기
     // =================================================================
-    public int getUnreadCount(String myPk) {
+    public int getUnreadCount(String myId) {
+        String myPk = getUserPkById(myId);
+        if (myPk == null) return 0;
+
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        // 내 쪽지 중 안 지웠고(0) 안 읽은(0) 쪽지 개수
         String sql = "SELECT COUNT(*) FROM private_message WHERE m_receiver_pk = ? AND m_read_status = 0 AND m_receiver_del = 0";
         try {
             con = DBManager.connect();
@@ -189,9 +217,12 @@ public class MessageDAO {
     }
 
     // =================================================================
-    // 6. 쪽지 전체 읽음 처리 (받은 쪽지함을 열었을 때 실행)
+    // 6. 쪽지 전체 읽음 처리
     // =================================================================
-    public int markAsRead(String myPk) {
+    public int markAsRead(String myId) {
+        String myPk = getUserPkById(myId);
+        if (myPk == null) return 0;
+
         Connection con = null;
         PreparedStatement pstmt = null;
         String sql = "UPDATE private_message SET m_read_status = 1 WHERE m_receiver_pk = ? AND m_read_status = 0";

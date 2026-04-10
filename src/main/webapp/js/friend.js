@@ -238,7 +238,7 @@ function loadFriendList() {
                             <div style="font-size:11px; color:#c0b0a0;">일촌 맺은 날: ${f.f_date}</div>
                         </div>
                         <div style="display:flex; gap:5px;">
-                            <button onclick="goToWriteMessage('${f.friend_pk}')" style="background:#a29bfe; color:white; border:none; padding:5px 12px; border-radius:15px; cursor:pointer; font-family:'Gaegu', cursive;">쪽지</button>
+                            <button onclick="goToWriteMessage('${f.u_id}')" style="background:#a29bfe; color:white; border:none; padding:5px 12px; border-radius:15px; cursor:pointer; font-family:'Gaegu', cursive;">쪽지</button>
                             <button onclick="deleteFriendFromList('${f.friend_pk}')" style="background:#ff7675; color:white; border:none; padding:5px 12px; border-radius:15px; cursor:pointer; font-family:'Gaegu', cursive;">끊기</button>
                         </div>
                     </div>`;
@@ -270,12 +270,11 @@ function deleteFriendFromList(targetPk) {
 }
 
 // 일촌 목록에서 쪽지 버튼을 눌렀을 때의 동작
-function goToWriteMessage(targetPk) {
+function goToWriteMessage(targetId) {
   // 1. 네 index.jsp에 있는 쪽지함 메뉴(또는 탭)를 찾아서 강제로 클릭시킨다!
-  // (이러면 경로 꼬일 일이 절대 없다)
   const msgMenu =
-    document.querySelector('.menu-item[data-src*="message.jsp"]') ||
-    document.querySelector('.nb-tab[data-src*="message.jsp"]');
+      document.querySelector('.menu-item[data-src*="message.jsp"]') ||
+      document.querySelector('.nb-tab[data-src*="message.jsp"]');
 
   if (msgMenu) {
     msgMenu.click();
@@ -287,7 +286,7 @@ function goToWriteMessage(targetPk) {
   // 2. 화면이 불려오기를 0.4초 정도 넉넉히 기다린 뒤, '쪽지 쓰기' 화면을 열고 친구를 고정한다.
   setTimeout(() => {
     if (typeof openWriteMessage === "function") {
-      openWriteMessage(targetPk);
+      openWriteMessage(targetId); // PK가 아닌 ID가 넘어가도록 수정됨
     } else {
       console.error("message.js 파일이 아직 로딩되지 않았습니다!");
     }
