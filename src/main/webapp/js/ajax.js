@@ -91,7 +91,9 @@ document.addEventListener('click', e => {
 // ✅ phone-home: 페이지 주인 재생목록
         if (target.classList.contains('phone-home')) {
             const currentHostId = sessionStorage.getItem('currentHostId');
-            const targetPk = currentHostId || window.loginUserPk || '';
+            const targetPk = (currentHostId && currentHostId !== String(window.loginUserPk))
+                ? currentHostId
+                : (window.loginUserPk || '');
             switchTab(target.dataset.src);
             if (typeof loadPlaylist === 'function') {
                 loadPlaylist(targetPk);
