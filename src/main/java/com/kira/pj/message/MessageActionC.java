@@ -1,4 +1,4 @@
-package com.kira.pj.message;
+package com.kira.pj.message; // 본인 프로젝트 패키지명에 맞게 수정하세요
 
 import com.google.gson.JsonObject;
 import javax.servlet.ServletException;
@@ -13,14 +13,12 @@ import java.io.IOException;
 public class MessageActionC extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 1. 한글 깨짐 방지
+        // 1. 인코딩 및 JSON 세팅
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=UTF-8");
 
         HttpSession session = request.getSession();
         String myPk = (String) session.getAttribute("loginUserPk");
-
-        // JSON 응답을 만들기 위한 객체
         JsonObject resultJson = new JsonObject();
 
         if (myPk == null) {
@@ -34,7 +32,7 @@ public class MessageActionC extends HttpServlet {
         MessageDAO dao = new MessageDAO();
 
         // ===========================================
-        // [기능 1] 쪽지 보내기
+        // [기능 1] 쪽지 발송
         // ===========================================
         if ("send".equals(action)) {
             String receiverPk = request.getParameter("receiverPk");
@@ -42,7 +40,6 @@ public class MessageActionC extends HttpServlet {
 
             int res = dao.sendMessage(myPk, receiverPk, content);
 
-            // DAO에서 철벽 방어(-1)를 쳤을 경우!
             if (res == -1) {
                 resultJson.addProperty("success", false);
                 resultJson.addProperty("message", "일촌에게만 쪽지를 보낼 수 있습니다. 🔒");
@@ -54,11 +51,11 @@ public class MessageActionC extends HttpServlet {
             }
 
             // ===========================================
-            // [기능 2] 쪽지 삭제 (내 쪽지함에서만 숨김)
+            // [기능 2] 쪽지 삭제
             // ===========================================
         } else if ("delete".equals(action)) {
             String msgPk = request.getParameter("msgPk");
-            String type = request.getParameter("type"); // "received" 또는 "sent"
+            String type = request.getParameter("type");
 
             int res = dao.deleteMessage(msgPk, myPk, type);
             if (res > 0) {
@@ -67,9 +64,14 @@ public class MessageActionC extends HttpServlet {
                 resultJson.addProperty("success", false);
                 resultJson.addProperty("message", "삭제에 실패했습니다.");
             }
+
+            // 🚨 [새로운 기능 3] 받은 쪽지함 열었을 때 모두 읽음 처리
+        } else if ("markRead".equals(action)) {
+            dao.markAsRead(myPk);
+            resultJson.addProperty("success", true);
         }
 
-        // 완성된 결과를 프론트엔드로 발사!
+        // 완성된 결과를 발사!
         response.getWriter().print(resultJson.toString());
     }
 }

@@ -254,9 +254,8 @@ function initPlayer() {
 
 // ── 플레이리스트 로드 ─────────────────────────────────────────
 function loadPlaylist(targetPk) {
-  const myPk = window.loginUserPk || '';
-  const isActuallyMe = (!targetPk || targetPk === myPk);
-
+  const myPk = String(window.loginUserPk || loginUserPk || '');
+  const isActuallyMe = (!targetPk || String(targetPk) === myPk);
   // ✅ 1. 현재 재생 중인 대상(PK)이 바뀐 건지 확인
   // 기존에 window.currentPlayingPk 같은 변수가 없다면 새로 정의해서 비교합니다.
   const currentPk = isActuallyMe ? 'MY' : targetPk;
