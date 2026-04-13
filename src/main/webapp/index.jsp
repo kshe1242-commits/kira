@@ -160,26 +160,22 @@
             <div class="nb-tabs">
                 <div
                         class="nb-tab ${content eq 'main.jsp' ? 'active' : ''}"
-                        data-src="${pageContext.request.contextPath}/home?ajax=true"
-                >
+                        data-src="${pageContext.request.contextPath}/home?ajax=true">
                     홈
                 </div>
                 <div
                         class="nb-tab ${content eq 'diary/diary.jsp' ? 'active' : ''}"
-                        data-src="${pageContext.request.contextPath}/diary?ajax=true"
-                >
+                        data-src="${pageContext.request.contextPath}/diary?ajax=true">
                     다이어리
                 </div>
                 <div
                         class="nb-tab ${content eq 'photo/photo.jsp' ? 'active' : ''}"
-                        data-src="${pageContext.request.contextPath}/photo/photo.jsp"
-                >
+                        data-src="${pageContext.request.contextPath}/photo/photo.jsp">
                     사진첩
                 </div>
                 <div
                         class="nb-tab ${content eq 'board/board.jsp' ? 'active' : ''}"
-                        data-src="${pageContext.request.contextPath}/board/board.jsp"
-                >
+                        data-src="${pageContext.request.contextPath}/board/board.jsp">
                     방명록
                 </div>
                 <div class="nb-tab" data-src="${pageContext.request.contextPath}friend/friend.jsp">일촌목록</div>
@@ -191,8 +187,7 @@
             <div
                     id="notebook-content"
                     class="notebook-content"
-                    style="flex: 1; width: 100%; overflow-y: auto; padding: 10px"
-            >
+                    style="flex: 1; width: 100%; overflow-y: auto; padding: 10px">
                 <%-- 로딩 스피너 (초기 렌더링 전 표시) --%>
                 <div class="nb-loading" id="nb-loading">
                     <div class="nb-spinner"></div>
@@ -210,8 +205,7 @@
                         id="bgm-title-mp3"
                         class="mp3-title-inner"
                         data-src="/bgm?ajax=true"
-                        style="cursor: pointer"
-                >
+                        style="cursor: pointer">
                   ♪ NeedygirlOverDose
                 </span>
                     </div>
@@ -247,8 +241,7 @@
 
                     <a id="yt-link" href="#" target="_blank" class="phone-yt-link">▶ YouTube에서 보기</a>
                     <div class="text" id="bgm-title-phone"
-                         data-src="/bgm?ajax=true"
-                    >🎶 내 재생목록
+                         data-src="/bgm?ajax=true">🎶 내 재생목록
                     </div>
                 </div>
                 <div class="phone-home"
