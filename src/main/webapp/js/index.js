@@ -26,27 +26,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 sessionStorage.removeItem("currentHostId");
                 sessionStorage.removeItem("currentHostNick");
 
-<<<<<<< HEAD
-  // 메뉴 및 탭 이벤트 등록
-  document.querySelectorAll(".menu-item, .nb-tab").forEach((button) => {
-    button.addEventListener("click", function (e) {
-      e.stopPropagation();
-      const targetUrl = this.getAttribute("data-src");
-      document
-        .querySelectorAll(".menu-item, .nb-tab")
-        .forEach((el) => el.classList.remove("active"));
-      const correspondingTabs = document.querySelectorAll(
-        `[data-src="${targetUrl}"]`,
-      );
-      correspondingTabs.forEach((el) => el.classList.add("active"));
-      loadPage(targetUrl);
-    });
-  });
-=======
+
                 // 내 닉네임으로 다시 세팅
                 const profileName = document.getElementById("profile-name");
                 if (profileName) profileName.textContent = loginUserNickname;
->>>>>>> f6cc8c6e7d0fc9656e3f6230636860931b084e33
+
 
                 // 내 홈 화면 로드
                 loadPage("/home?ajax=true");
@@ -71,7 +55,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 메뉴 및 탭 이벤트 등록
     document.querySelectorAll(".menu-item, .nb-tab").forEach((button) => {
-        button.addEventListener("click", function () {
+        button.addEventListener("click", function (e) {
+            e.stopPropagation();
             const targetUrl = this.getAttribute("data-src");
             document
                 .querySelectorAll(".menu-item, .nb-tab")
