@@ -45,41 +45,16 @@ function editStatus(host_id) {
 
 
 }
+function checkStatusPermission(currentHostId) {
+    const editBtn = document.querySelector(".status-edit-btn");
 
-// 2. 랜덤 문답 제출 기능
-function submitQnA() {
-    const answer = document.getElementById('qna-answer').value;
+    // 버튼이 화면에 없으면 그냥 넘어감
+    if (!editBtn) return;
 
-    if(answer.trim() === "") {
-        alert("답변을 입력해주세요!");
-        return;
-    }
-
-    // 추후 다이어리 insert 하는 fetch 로직 추가
-    alert("다이어리에 성공적으로 기록되었습니다! 📝");
-    document.getElementById('qna-answer').value = ""; // 입력창 비우기
-}
-
-// 3. 좋아요(하트) 토글 기능
-let isLiked = false; // (임시) DB에서 가져올 내가 좋아요 누른 여부
-let likeCount = 12;  // (임시) DB에서 가져올 총 좋아요 개수
-
-function toggleLike() {
-    isLiked = !isLiked;
-    const icon = document.getElementById('like-icon');
-    const count = document.getElementById('like-count');
-
-    if (isLiked) {
-        icon.innerText = '❤️';
-        icon.style.transform = 'scale(1.2)'; // 뿅! 하고 커짐
-        likeCount++;
+    // 현재 집주인(currentHostId)과 로그인한 내 아이디(loginUserId)가 같은지 비교!
+    if (currentHostId === loginUserId) {
+        editBtn.style.display = "inline-block"; // 내 집이면 짠! 하고 보여줌
     } else {
-        icon.innerText = '🤍';
-        icon.style.transform = 'scale(1)';   // 다시 원래대로
-        likeCount--;
+        editBtn.style.display = "none";         // 남의 집이면 쥐도 새도 모르게 숨김
     }
-
-    count.innerText = likeCount;
-
-    // 추후 fetch로 좋아요 증감 내역을 DB에 저장하세요!
 }
