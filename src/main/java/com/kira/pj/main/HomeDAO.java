@@ -134,4 +134,36 @@ public class HomeDAO {
 
 
     }
+
+    // =======================================================
+    // [추가] 홈 화면에 띄울 최근 다이어리 제목 가져오기
+    // =======================================================
+    public static void getRecentDiary(HttpServletRequest req, String hostId) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            con = DBManager.connect();
+            // 해당 미니홈피 주인(hostId)이 쓴 글 중 가장 최근 글 1개만 조회
+            String sql = "SELECT * FROM (" +
+                    "  SELECT d_title " +
+                    "  FROM diary_test " +
+                    "  WHERE TRIM(d_id) = ? " +
+                    "  ORDER BY d_no DESC" +
+                    ") WHERE ROWNUM = 1";
+
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, hostId.trim());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                // 가져온 제목을 JSP에서 쓸 수 있게 세팅
+                req.setAttribute("recentDiaryTitle", rs.getString("d_title"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(con, pstmt, rs);
+        }
+    }
 }
