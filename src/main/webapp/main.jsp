@@ -10,19 +10,7 @@
 <body>
 <div class="nb-body home-wrapper">
 
-    <div class="home-status-board">
-        <div class="status-left">
-            <div class="home-status-msg">
-                <span id="status-text">${searchMain.st_message}</span>
-                <button onclick="editStatus('${sessionScope.loginUserId}')" class="status-edit-btn">[수정]</button>
-            </div>
-            <div class="post-text">
-                기능 구현 준비 완료! 이 자리에 DB 데이터를 뿌려주세요. 😊
-            </div>
-        </div>
-    </div>
-    <span class="status-since">${searchMain.st_date}</span>
-</div>
+
 
 <div class="home-visual">
     <span class="visual-placeholder">${searchMain.main_img}</span>
