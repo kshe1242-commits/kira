@@ -26,7 +26,7 @@
                 <input id="pw" type="password" name="pw" placeholder="비밀번호 입력">
             </div>
 
-            <button type="button" id="loginBtn">로그인</button>
+            <button type="submit" id="loginBtn">로그인</button>
         </form>
 
         <div class="login-links">

@@ -51,10 +51,7 @@
         </div>
     </div>
 
-<div class="home-visual">
-    <span class="visual-placeholder">${searchMain.main_img}</span>
 
-</div>
 
 <div class="home-bottom-row">
 
