@@ -1,8 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap");
 
-/* ============================
-기본 스타일 & 우드 배경
-============================ */
 * {
     margin: 0;
     padding: 0;
@@ -16,7 +13,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f3e5dc;
+
+    /* 🌟 바탕색과 그라데이션을 테마 변수로 교체! */
+    background-color: var(--bg-base);
     background-image: repeating-linear-gradient(
             90deg,
             rgba(160, 130, 100, 0.03) 0px,
@@ -26,16 +25,15 @@ body {
     ),
     radial-gradient(
             circle at 70% 30%,
-            rgba(210, 180, 140, 0.15) 0%,
+            rgba(210, 180, 140, 0.05) 0%,
             transparent 60%
     ),
-    radial-gradient(
-            circle at 20% 80%,
-            rgba(210, 180, 140, 0.1) 0%,
-            transparent 50%
-    ),
-    linear-gradient(180deg, #f3e5dc 0%, #e2d2c2 100%);
+    linear-gradient(180deg, var(--bg-base) 0%, var(--bg-grad) 100%);
+
     position: relative;
+
+    /* 🌟 마법의 한 줄: 색상이 바뀔 때 0.5초 동안 부드럽게 스르륵 바뀜 */
+    transition: background-color 0.5s ease, background-image 0.5s ease;
 }
 
 body::after {
@@ -159,7 +157,7 @@ body::after {
 .profile-name {
     font-family: "Nanum Pen Script", cursive;
     font-size: 26px;
-    color: #7a6b5c;
+    color: var(--text-main);
     text-align: center;
     margin-bottom: 5px;
     position: relative;
@@ -172,12 +170,13 @@ body::after {
     left: 20%;
     width: 60%;
     height: 2px;
-    background: rgba(240, 160, 160, 0.7);
+    background: var(--theme-menu-hover);
 }
 
 .profile-mood {
     font-size: 13px;
-    color: #9a8b7a;
+    color: var(--text-main);
+    opacity: 0.8;
     text-align: center;
     line-height: 1.6;
 }
@@ -211,11 +210,11 @@ body::after {
 }
 
 .menu-item:hover {
-    background: rgba(240, 160, 160, 0.2);
+    background: var(--theme-menu-hover);
 }
 
 .menu-item.active {
-    background: rgba(240, 160, 160, 0.4);
+    background: var(--theme-menu-active);
     color: #5a4b3a;
     font-weight: bold;
 }
@@ -230,29 +229,9 @@ body::after {
     z-index: 10;
 }
 
-.jar {
-    width: 80px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.4);
-    border: 2px solid rgba(255, 255, 255, 0.7);
-    border-radius: 10px 10px 15px 15px;
-    backdrop-filter: blur(2px);
-    position: relative;
-    overflow: hidden;
-    top: 30px;
-    left: -33px;
 
-}
 
-.jar::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 35px;
-    background: rgba(130, 190, 230, 0.5);
-}
+
 
 .tools-out {
     position: absolute;
@@ -308,13 +287,7 @@ body::after {
     left: -33px;
 }
 
-.jar-label {
-    text-align: center;
-    font-size: 16px;
-    color: #9a8a7a;
-    margin-top: 8px;
-    font-family: "Nanum Pen Script", cursive;
-}
+
 
 /* ============================
 가운데: 공책 (메인 영역)
@@ -345,9 +318,9 @@ body::after {
 /*}*/
 
 .notebook-header {
-    background: linear-gradient(135deg, #fceae8 0%, #f7cfcd 100%);
+    background: linear-gradient(135deg, var(--theme-grad-start) 0%, var(--theme-grad-end) 100%);
     padding: 15px 20px 15px 60px;
-    border-bottom: 2px solid #f2c0bd;
+    border-bottom: 2px solid var(--theme-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -361,7 +334,7 @@ body::after {
 
 .visitor {
     font-size: 12px;
-    color: #aaa09a;
+    color: var(--text-sub);
     background: rgba(255, 255, 255, 0.6);
     padding: 4px 10px;
     border-radius: 20px;
@@ -456,20 +429,20 @@ body::after {
     flex: 1;
     background: transparent;
     border: none;
-    border-bottom: 2px solid #f7cfcd;
+    border-bottom: 2px solid var(--theme-grad-end);
     padding: 8px 5px;
     font-family: "Gaegu", cursive;
     font-size: 18px;
-    color: #5a4a3a;
+    color: var(--text-main);
     outline: none;
     text-align: left;
 }
 
 .write-btn {
     padding: 8px 18px;
-    background: linear-gradient(135deg, #fceae8 0%, #f7cfcd 100%);
+    background: linear-gradient(135deg, var(--theme-grad-start) 0%, var(--theme-grad-end) 100%);
     color: #8a7a78;
-    border: 1px solid #f2c0bd;
+    border: 1px solid var(--theme-border);
     border-radius: 20px;
     font-family: "Gaegu", cursive;
     font-size: 13px;
@@ -506,18 +479,18 @@ body::after {
 
 .post-user {
     font-size: 18px;
-    color: #f2a0a0;
+    color: var(--theme-text-point);
     font-weight: bold;
 }
 
 .post-date {
     font-size: 14px;
-    color: #c0b0a0;
+    color: var(--text-sub);
 }
 
 .post-text {
     font-size: 20px;
-    color: #5a4a3a;
+    color: var(--text-main);
     line-height: 1.7;
     max-height: 450px;
     overflow-y: auto;
@@ -635,6 +608,41 @@ body::after {
     border-color: #ee99aa;
     font-size: 16px;
 }
+
+.postit {
+    margin-top: auto;
+    margin-bottom: 10px;
+    align-self: flex-end;
+    width: 140px;
+    background: #fffdbd;
+    padding: 15px;
+    box-shadow: 3px 5px 10px rgba(100, 90, 50, 0.1);
+    transform: rotate(4deg);
+    z-index: 20;
+    font-family: "Nanum Pen Script", cursive;
+    font-size: 16px;
+    color: var(--text-main);
+    line-height: 1.5;
+    border-radius: 2px;
+    position: absolute;
+    left: 134px;
+    bottom: 1%;
+}
+
+.postit::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(
+            135deg,
+            transparent 50%,
+            rgba(0, 0, 0, 0.05) 50%
+    );
+}
+
 .smartphone {
     width: 200px;
     background: linear-gradient(160deg, #2a2a2a, #1a1a1a);
@@ -686,9 +694,7 @@ body::after {
     color: #aaa;
 }
 
-/* index.css */
 
-/* 썸네일 컨테이너: 크기를 여기서 결정하세요 */
 .phone-thumb-wrapper {
     position: relative;
     width: 175px;   /* 100px이 작다면 120px~130px로 조절 */
@@ -698,7 +704,6 @@ body::after {
     border-radius: 12px;
     background-color: #000;
 
-    /* ✅ 이 3줄이 이미지를 정중앙으로 모셔옵니다 */
     display: flex !important;
     align-items: center !important;    /* 수직 중앙 정렬 */
     justify-content: center !important; /* 수평 중앙 정렬 */
@@ -714,7 +719,6 @@ body::after {
     opacity: 0.8;
 }
 
-/* 메인 썸네일: 잘림이 거슬린다면 contain, 꽉 채우고 싶다면 cover */
 #phone-thumb {
     position: relative;
     z-index: 1;
@@ -724,14 +728,12 @@ body::after {
     object-fit: cover; /* 영역내에서 꽉차게 */
 }
 
-/* YT IFrame API가 생성하는 iframe */
 #yt-player {
     width: 156px !important;
     height: 200px !important; /* 16:9 비율 */
     display: block;
 }
 
-/* 유튜브 바로가기 */
 .phone-yt-link {
     display: block;
     width: 100%;
@@ -773,7 +775,7 @@ body::after {
 
 .visitor-btn-card {
     background: #ffffff;
-    border: 1px solid #f2c0bd;
+    border: 1px solid var(--theme-border);
     border-radius: 12px;
     padding: 10px;
     display: flex;
@@ -784,7 +786,6 @@ body::after {
     position: relative;
 }
 
-/* 상단에 작은 테이프 붙인 효과 */
 .visitor-btn-card::before {
     content: "";
     position: absolute;
@@ -793,7 +794,7 @@ body::after {
     transform: translateX(-50%);
     width: 40px;
     height: 15px;
-    background: rgba(247, 207, 205, 0.6); /* 연한 핑크색 테이프 */
+    background: var(--theme-tape);
     border-radius: 2px;
 }
 
@@ -804,7 +805,7 @@ body::after {
 .visitor-text {
     font-family: "Nanum Pen Script", cursive;
     font-size: 18px;
-    color: #8a7a78;
+    color: var(--text-main);
     font-weight: bold;
 }
 
@@ -812,15 +813,13 @@ body::after {
     display: none !important;
 }
 
-/* 선이 사라져서 내용이 왼쪽으로 너무 붙는다면 여백 조절 */
 .notebook.is-visitor .nb-body,
 .notebook.is-visitor .posts {
-    padding-left: 25px; /* 가려지던 부분만큼 여백 확보 */
+    padding-left: 25px;
 }
 
-/* 방문자 리스트의 가로 구분선 디자인 (선택사항) */
 .notebook.is-visitor .post-item {
-    border-bottom: 1px dashed #f2c0bd;
+    border-bottom: 1px dashed var(--theme-border);
     margin-bottom: 10px;
     padding-bottom: 10px;
 }
@@ -886,7 +885,7 @@ body::after {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.6); /* 분홍색 배경 위에 자연스럽게 얹히도록 반투명 흰색 */
-    border: 1px dashed #f2a0a0; /* 공책 느낌의 점선 테두리 */
+    border: 1px dashed var(--theme-text-point); /* 공책 느낌의 점선 테두리 */
     border-radius: 20px;
     padding: 4px 15px;
     width: 220px;
@@ -896,8 +895,8 @@ body::after {
 /* 마우스 올리거나 클릭했을 때 진해지는 효과 */
 .mini-search-wrapper:focus-within, .mini-search-wrapper:hover {
     background: #fff;
-    border: 1px solid #ff7675; /* 점선이 실선으로 바뀌면서 강조! */
-    box-shadow: 0 2px 6px rgba(242, 160, 160, 0.3);
+    border: 1px solid var(--theme-point-color); /* 점선이 실선으로 바뀌면서 강조! */
+    box-shadow: 0 2px 6px var(--theme-menu-active);
 }
 
 /* 입력칸 글씨체 통일 */
@@ -951,7 +950,7 @@ body::after {
     border-bottom: none;
 }
 .search-item:hover {
-    background: #fceae8; /* 마우스 올리면 분홍색으로 살짝 물듦 */
+    background: var(--theme-grad-start);/* 마우스 올리면 분홍색으로 살짝 물듦 */
 }
 .search-item-title {
     font-family: "Gaegu", cursive;
@@ -986,4 +985,58 @@ body::after {
 .friend-action-btn:hover {
     transform: translateY(-2px);
     box-shadow: 1px 3px 5px rgba(0,0,0,0.15);
+}
+/*pencil*/
+/* ============================
+   🎨 스킨(테마) 컬러 팔레트 (파스텔 리뉴얼 🌸🌿🍇)
+============================ */
+:root {
+    /* 🌸 1. 코튼 캔디 핑크 (기본 테마)
+       기존의 쨍한 붉은빛을 빼고 솜사탕처럼 부드러운 베이비 핑크로 변경 */
+    --theme-grad-start: #fff0f0;
+    --theme-grad-end: #ffe1e1;
+    --theme-border: #ffcdcd;
+    --theme-point-color: #ffb6b9;
+    --theme-text-point: #f29c9f; /* 글씨는 잘 보이게 살짝만 진하게 */
+    --theme-menu-active: rgba(255, 182, 185, 0.4);
+    --theme-menu-hover: rgba(255, 182, 185, 0.2);
+    --theme-tape: rgba(255, 225, 225, 0.9);
+    --bg-base: #fff5f5;      /* 책상 뒤쪽 벽지 위쪽 색 */
+    --bg-grad: #fae3e3;      /* 책상 뒤쪽 벽지 아래쪽 색 */
+    --text-main: #6b5b5b;    /* 방명록/다이어리 본문 글씨색 (따뜻한 고동색) */
+    --text-sub: #d1b8b8;     /* 날짜, 방문자 수 등 서브 글씨색 */
+}
+
+/* 🌿 2. 밀키 민트
+   눈이 시린 형광 민트가 아닌, 따뜻하고 포근한 녹차 라떼 느낌의 민트 */
+body.theme-mint {
+    --theme-grad-start: #f0fbf5;
+    --theme-grad-end: #dcf4e6;
+    --theme-border: #bce8d2;
+    --theme-point-color: #82dfb6;
+    --theme-text-point: #5ebc93;
+    --theme-menu-active: rgba(130, 223, 182, 0.4);
+    --theme-menu-hover: rgba(130, 223, 182, 0.2);
+    --theme-tape: rgba(220, 244, 230, 0.9);
+    --bg-base: #f2fdf7;
+    --bg-grad: #e0f2e8;
+    --text-main: #4a6356;    /* 본문 글씨색 (차분한 진녹색) */
+    --text-sub: #a1c2b0;
+}
+
+/* 🍇 3. 라벤더 퍼플
+   어두운 보라색을 걷어내고, 여리여리한 라일락 꽃잎 같은 연보라색 */
+body.theme-purple {
+    --theme-grad-start: #f7f3ff;
+    --theme-grad-end: #ece3ff;
+    --theme-border: #d7c6fa;
+    --theme-point-color: #baa3f5;
+    --theme-text-point: #9c82e0;
+    --theme-menu-active: rgba(186, 163, 245, 0.4);
+    --theme-menu-hover: rgba(186, 163, 245, 0.2);
+    --theme-tape: rgba(236, 227, 255, 0.9);
+    --bg-base: #f9f7fc;
+    --bg-grad: #edeaf5;
+    --text-main: #59546b;    /* 본문 글씨색 (오묘한 다크 보라빛) */
+    --text-sub: #b8b0c9;
 }

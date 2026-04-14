@@ -132,12 +132,10 @@
 
             <div class="pencil-jar-wrap">
                 <div class="tools-out">
-                    <div class="tool pencil1"></div>
-                    <div class="tool pencil2"></div>
-                    <div class="tool pencil3"></div>
+                    <div class="tool pencil1 theme-btn" data-theme="theme-pink" style="cursor:pointer;" title="핑크 테마"></div>
+                    <div class="tool pencil2 theme-btn" data-theme="theme-mint" style="cursor:pointer;" title="민트 테마"></div>
+                    <div class="tool pencil3 theme-btn" data-theme="theme-purple" style="cursor:pointer;" title="퍼플 테마"></div>
                 </div>
-                <div class="jar"></div>
-                <div class="jar-label">꾸미기</div>
             </div>
         </div>
         <%-- ══ /왼쪽 ══ --%> <%-- is-visitor는 switchTab()이 토글 --%>
