@@ -36,7 +36,10 @@
 
       <div class="form-row">
         <label for="pw">비밀번호</label>
-        <input id="pw" type="password" name="pw" required placeholder="비밀번호 입력">
+        <input id="pw" type="password" name="pw" required
+               placeholder="비밀번호 입력"
+               pattern="^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':\\|,.<>\/?]).{8,}$"
+               title="비밀번호는 8자 이상, 문자·숫자·특수문자를 모두 포함해야 합니다.">
 
         <!-- 강도 -->
         <div id="pw-strength">
