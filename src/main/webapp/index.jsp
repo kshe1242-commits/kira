@@ -41,6 +41,7 @@
     <script defer src="js/ajax.js"></script>
     <script defer src="js/main.js"></script>
     <script defer src="js/qna.js"></script>
+    <script src="js/user/session-timer.js"></script>
 
     <title>Team Kira - Minihompy</title>
 </head>
@@ -55,6 +56,10 @@
             </div>
             <div class="top-login-text">환영합니다 🌷</div>
 
+            <div class="top-login-time" id="sessionTimer">
+                남은 시간: 30:00
+            </div>
+
             <div class="top-login-btns">
                 <a href="${pageContext.request.contextPath}/mypage" class="top-login-btn">마이페이지</a>
                 <a href="${pageContext.request.contextPath}/logout" class="top-login-btn logout">로그아웃</a>
@@ -63,10 +68,9 @@
         <%-- ══ 왼쪽: 프로필 + 메뉴 + 색연필통 ══ --%>
         <div class="left-col">
             <div class="profile">
-                <%-- profile-card 시작 (여기에 인라인 스타일 절대 넣지 마라!) --%>
+                <%-- profile-card 시작 --%>
                 <div class="profile-card">
 
-                    <%-- 🚨 [수정] 깔끔하게 클래스만 부여한 일촌 버튼 영역 --%>
                     <div class="friend-btn-wrapper">
                         <button id="btn-friend-action" class="friend-action-btn" style="display:none;"
                                 onclick="handleFriendAction()"></button>
@@ -74,52 +78,33 @@
                     <div class="profile-photo" id="profile-photo"
                          style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
                         <c:choose>
-                            <%-- 세션에 프로필 이미지 URL이 있을 경우 --%>
                             <c:when test="${not empty sessionScope.loginUserProfileImg}">
                                 <img src="${sessionScope.loginUserProfileImg}"
                                      alt="프로필 사진"
                                      style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px;">
                             </c:when>
-                            <%-- 세션에 값이 없을 경우 (기본값) --%>
                             <c:otherwise>
                                 🌬️
                             </c:otherwise>
                         </c:choose>
                     </div>
                     <div class="profile-name" id="profile-name" style="visibility:hidden;"></div>
-                    <div class="profile-mood">
-                        햇살 가득한 오후,<br/>기분 좋은 바람... 🍃<br/>
-                        <span style="font-size: 11px; color: #c0b0a0">since 2005</span>
+
+                    <div class="profile-status">
+                        <span id="status-text">${sessionScope.loginUserStMessage}</span>
+                        <button onclick="editStatus('${sessionScope.loginUserId}')" class="status-edit-btn" style="display:none;">[수정]</button>
                     </div>
+
                 </div>
+
                 <div class="menu-card">
                     <div class="menu-list">
-                        <div
-                                class="menu-item ${content eq 'main.jsp' ? 'active' : ''}"
-                                data-src="${pageContext.request.contextPath}/home?ajax=true"
-                        >
-                            홈
-                        </div>
-                        <div
-                                class="menu-item ${content eq 'diary/diary.jsp' ? 'active' : ''}"
-                                data-src="${pageContext.request.contextPath}/diary?ajax=true"
-                        >
-                            다이어리
-                        </div>
-                        <div
-                                class="menu-item ${content eq 'pic/pic.jsp' ? 'active' : ''}"
-                                data-src="${pageContext.request.contextPath}/photo/photo.jsp"
-                        >
-                            사진첩
-                        </div>
-                        <div
-                                class="menu-item ${content eq 'board/board.jsp' ? 'active' : ''}"
-                                data-src="${pageContext.request.contextPath}/board/board.jsp"
-                        >방명록
-                        </div>
+                        <div class="menu-item ${content eq 'main.jsp' ? 'active' : ''}" data-src="${pageContext.request.contextPath}/home?ajax=true">홈</div>
+                        <div class="menu-item ${content eq 'diary/diary.jsp' ? 'active' : ''}" data-src="${pageContext.request.contextPath}/diary?ajax=true">다이어리</div>
+                        <div class="menu-item ${content eq 'pic/pic.jsp' ? 'active' : ''}" data-src="${pageContext.request.contextPath}/photo/photo.jsp">사진첩</div>
+                        <div class="menu-item ${content eq 'board/board.jsp' ? 'active' : ''}" data-src="${pageContext.request.contextPath}/board/board.jsp">방명록</div>
                         <div class="menu-item" data-src="${pageContext.request.contextPath}friend/friend.jsp">일촌목록</div>
-                        <div class="menu-item" data-src="${pageContext.request.contextPath}message/message.jsp">쪽지함
-                        </div>
+                        <div class="menu-item" data-src="${pageContext.request.contextPath}message/message.jsp">쪽지함</div>
                     </div>
                 </div>
 
@@ -127,12 +112,10 @@
 
             <div class="pencil-jar-wrap">
                 <div class="tools-out">
-                    <div class="tool pencil1"></div>
-                    <div class="tool pencil2"></div>
-                    <div class="tool pencil3"></div>
+                    <div class="tool pencil1 theme-btn" data-theme="theme-pink" style="cursor:pointer;" title="핑크 테마"></div>
+                    <div class="tool pencil2 theme-btn" data-theme="theme-mint" style="cursor:pointer;" title="민트 테마"></div>
+                    <div class="tool pencil3 theme-btn" data-theme="theme-purple" style="cursor:pointer;" title="퍼플 테마"></div>
                 </div>
-                <div class="jar"></div>
-                <div class="jar-label">꾸미기</div>
             </div>
         </div>
         <%-- ══ /왼쪽 ══ --%> <%-- is-visitor는 switchTab()이 토글 --%>
@@ -142,7 +125,7 @@
         >
 
             <div class="notebook-header">
-                <h2><span id="host-title"> 📖 Team Kira의 소소한 일상</span></h2>
+                <h2><span id="host-title"> ${sessionScope.loginUserHompyTitle}</span></h2>
                 <div class="mini-search-wrapper">
                     <input
                             type="text"
@@ -264,10 +247,7 @@
             </div>
 
         </div>
-        <div class="postit">
-            오늘도<br/>몽글몽글한<br/>하루 보내장🌤<br/>
-            <span style="font-size: 12px; color: #8a8030">— 2026.03.31</span>
-        </div>
+
     </div>
 </div>
 <div class="desk-front"></div>

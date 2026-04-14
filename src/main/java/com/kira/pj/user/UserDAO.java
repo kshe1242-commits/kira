@@ -139,6 +139,8 @@ public class UserDAO {
                     "(u_pk, u_name, u_birth, u_id, u_pw, u_nickname, u_email, u_join_date) " +
                     "values (?, ?, ?, ?, ?, ?, ?, sysdate)";
 
+            String mainSql = "insert into main_test values(?,'일상공유공간','환영합니다','사진','빈공간',sysdate)";
+
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, pk);
             pstmt.setString(2, name);
@@ -152,7 +154,18 @@ public class UserDAO {
                 HttpSession session = request.getSession();
                 session.removeAttribute("joinEmailAuthCode");
                 session.removeAttribute("joinEmailAuthTarget");
+
+
+                pstmt = conn.prepareStatement(mainSql);
+                pstmt.setString(1,id);
+                if (pstmt.executeUpdate() == 1) {
+                    System.out.println("main 부여 완료");
+                }
+
                 return json(true, "회원가입 성공", "/login");
+
+
+
             }
 
             return json(false, "회원가입 실패");
@@ -294,6 +307,10 @@ public class UserDAO {
 
             if (rs.next()) {
                 HttpSession session = request.getSession();
+
+                // 30분 동안 요청 없으면 세션 만료
+                session.setMaxInactiveInterval(30 * 60);
+
                 session.setAttribute("loginUserPk", rs.getString("u_pk"));
                 session.setAttribute("loginUserName", rs.getString("u_name"));
                 session.setAttribute("loginUserId", rs.getString("u_id"));
@@ -317,6 +334,7 @@ public class UserDAO {
                         // 없으면 null (index.jsp에서 이모지로 처리됨)
                         session.setAttribute("loginUserProfileImg", null);
                     }
+
                 } catch (Exception e) {
                     System.out.println("프로필 사진 로드 중 오류 발생");
                     e.printStackTrace();
@@ -326,7 +344,33 @@ public class UserDAO {
                     if (pstmtProfile != null) try { pstmtProfile.close(); } catch(Exception e) {}
                 }
                 // =========================================================
+                // ============================= 🌟 홈피 타이틀 세션에 올리기 추가
+                PreparedStatement pshompy = null;
+                ResultSet rshompy = null;
+                try {
+                    String hompySql = "SELECT hompy_title, st_message FROM main_test WHERE host_id = ?";
+                    pshompy = conn.prepareStatement(hompySql);
+                    pshompy.setString(1, rs.getString("u_id")); // 방금 로그인 성공한 아이디 사용
+                    rshompy = pshompy.executeQuery();
 
+                    if (rshompy.next()) {
+                        // DB에 설정한 홈피 제목이 있으면 세션에 저장 (이름을 loginUserHompyTitle로 지정하셨네요!)
+                        session.setAttribute("loginUserHompyTitle", rshompy.getString("hompy_title"));
+                        session.setAttribute("loginUserStMessage", rshompy.getString("st_message"));
+                    } else {
+                        // 없으면 null 처리
+                        session.setAttribute("loginUserHompyTitle", null);
+                        session.setAttribute("loginUserStMessage", null);
+                    }
+                } catch (Exception e) {
+                    System.out.println("홈피 타이틀 로드 중 오류 발생");
+                    e.printStackTrace();
+                } finally {
+                    // 🌟 자원 반납 필수!
+                    if (rshompy != null) try { rshompy.close(); } catch(Exception e) {}
+                    if (pshompy != null) try { pshompy.close(); } catch(Exception e) {}
+                }
+                // =========================================================
 
 
 

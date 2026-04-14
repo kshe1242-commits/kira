@@ -17,29 +17,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (profileName) profileName.style.visibility = "visible";
 
-    // 🌟 [추가됨] '내 이름' 클릭 시 파도타기 세션 지우고 내 홈피로 복귀!
-    document.addEventListener("DOMContentLoaded", function () {
-        const goMyHomeBtn = document.getElementById("goMyHome");
-        if (goMyHomeBtn) {
-            goMyHomeBtn.addEventListener("click", function () {
-                // 🚨 핵심: 남의 집 ID 기억을 삭제한다!
-                sessionStorage.removeItem("currentHostId");
-                sessionStorage.removeItem("currentHostNick");
 
-                // 내 닉네임으로 다시 세팅
-                const profileName = document.getElementById("profile-name");
-                if (profileName) profileName.textContent = loginUserNickname;
+    const goMyHomeBtn = document.getElementById("goMyHome");
+    if (goMyHomeBtn) {
+        goMyHomeBtn.addEventListener("click", function () {
+            // 🚨 핵심: 남의 집 ID 기억을 삭제한다!
+            sessionStorage.removeItem("currentHostId");
+            sessionStorage.removeItem("currentHostNick");
 
-                // 내 홈 화면 로드
-                loadPage("/home?ajax=true");
 
-                // 일촌 버튼 숨기기 (내 홈피니까)
-                if (typeof checkFriendStatus === "function") {
-                    checkFriendStatus(loginUserId);
-                }
-            });
-        }
-    });
+            // 내 닉네임으로 다시 세팅
+            const profileName = document.getElementById("profile-name");
+            if (profileName) profileName.textContent = loginUserNickname;
+
+
+            // 내 홈 화면 로드
+            loadPage("/home?ajax=true");
+
+            // 일촌 버튼 숨기기 (내 홈피니까)
+            if (typeof checkFriendStatus === "function") {
+                checkFriendStatus(loginUserId);
+            }
+        });
+    }
+
 
     // 초기 위젯 및 알림 로드
     if (typeof loadRecentVisitors === "function") loadRecentVisitors();
@@ -53,7 +54,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 메뉴 및 탭 이벤트 등록
     document.querySelectorAll(".menu-item, .nb-tab").forEach((button) => {
-        button.addEventListener("click", function () {
+        button.addEventListener("click", function (e) {
+            e.stopPropagation();
             const targetUrl = this.getAttribute("data-src");
             document
                 .querySelectorAll(".menu-item, .nb-tab")
@@ -112,6 +114,23 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    // 테마(스킨) 변경 코드
+    const savedTheme = localStorage.getItem("myHompyTheme");
+    if (savedTheme) {
+        document.body.classList.add(savedTheme);
+    }
+    const themeBtns = document.querySelectorAll(".theme-btn");
+    themeBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+            const newTheme = this.getAttribute("data-theme");
+            document.body.classList.remove("theme-pink", "theme-mint", "theme-purple");
+            if (newTheme !== "theme-pink") {
+                document.body.classList.add(newTheme);
+            }
+            localStorage.setItem("myHompyTheme", newTheme);
+        });
+    });
 });
 
 // ==========================================
@@ -160,6 +179,11 @@ function loadPage(url) {
         .then((html) => {
             const content = document.getElementById("notebook-content");
             if (content) content.innerHTML = html;
+
+            if (typeof checkStatusPermission === "function") {
+                // 혹시 모를 숫자/문자 타입 불일치를 막기 위해 String으로 감싸서 보냅니다.
+                checkStatusPermission(String(targetOwnerId));
+            }
 
             const notebook = document.getElementById("notebook");
 
@@ -246,6 +270,7 @@ function goSearchMain(id, nick) {
             // 부가 기능 로드
             if (typeof loadRecentVisitors === "function") loadRecentVisitors();
             if (typeof checkFriendStatus === "function") checkFriendStatus(id);
+            if (typeof checkStatusPermission === "function") checkStatusPermission(id);
         })
         .catch((error) => console.error("파도타기 데이터 로드 실패:", error));
 }
