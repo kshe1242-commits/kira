@@ -9,7 +9,8 @@ create table userReg(
 );
 select * from USERREG;
 
-
+ALTER TABLE userReg
+    ADD u_nick_ticket NUMBER(5) DEFAULT 0 NOT NULL;
 
 
 insert into USERREG values('test1test1test1','DongMin','2001-01-01','test123','test123','DongMin','2026-03-31','test@email.com');
@@ -36,3 +37,17 @@ insert into USERREG values('git_hub', '허깃헙', '2000-01-20', 'git123', 'git1
 insert into USERREG values('linux_user', '황리눅', '1994-04-04', 'linux1', 'linux1', '우분투러버', '2026-04-12', 'linux@email.com');
 
 DELETE FROM userReg WHERE u_id = 'test2';
+
+
+CREATE TABLE nick_ticket_order (
+                                   nto_order_id      VARCHAR2(64 CHAR) PRIMARY KEY,
+                                   nto_user_pk       VARCHAR2(15 CHAR) NOT NULL,
+                                   nto_amount        NUMBER(10) NOT NULL,
+                                   nto_ticket_cnt    NUMBER(5) DEFAULT 1 NOT NULL,
+                                   nto_status        VARCHAR2(20 CHAR) NOT NULL,
+                                   nto_payment_key   VARCHAR2(200 CHAR),
+                                   nto_created_at    DATE DEFAULT SYSDATE NOT NULL,
+                                   nto_approved_at   DATE,
+                                   CONSTRAINT fk_nick_ticket_user
+                                       FOREIGN KEY (nto_user_pk) REFERENCES userReg(u_pk)
+);

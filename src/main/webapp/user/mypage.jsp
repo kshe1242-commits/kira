@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<script src="https://js.tosspayments.com/v2/standard"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -25,7 +26,40 @@
         <div>${sessionScope.loginUserNickname}</div>
     </div>
 
+    <div class="mypage-item">
+        <span>닉네임 변경권</span>
+        <div>${sessionScope.loginUserNickTicket}개</div>
+    </div>
+
     <div class="mypage-actions">
+
+        <!-- 닉네임 변경 -->
+        <button type="button" onclick="toggleNick()">닉네임 변경</button>
+
+        <div id="nickBox" style="display:none;">
+            <form id = "nickForm" action="${pageContext.request.contextPath}/change-nickname" method="post"
+                  onsubmit="return validateNickForm();">
+
+                <div class="inline-delete">
+                    <input type="text" id="newNickname" name="newNickname"
+                           placeholder="새 닉네임 입력" required maxlength="20">
+                    <button type="button" onclick="checkNickname()">중복확인</button>
+                </div>
+
+                <input type="hidden" id="nickChecked" name="nickChecked" value="N">
+                <input type="hidden" id="checkedNickname" name="checkedNickname" value="">
+
+                <div id="nick-check-text"></div>
+
+                <div style="margin-top:10px;">
+                    <button type="submit">닉네임 변경하기</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 닉네임 변경권 구매 -->
+        <button type="button" onclick="buyNickTicket()">닉네임 변경권 구매</button>
+
 
         <!-- 비밀번호 변경 버튼 -->
         <button type="button" onclick="togglePw()">비밀번호 변경</button>
@@ -257,6 +291,140 @@
 
 
     // --------- tk 작성 --------
+
+    // 닉네임 변경
+    function toggleNick() {
+        const nickBox = document.getElementById("nickBox");
+        const pwBox = document.getElementById("pwBox");
+        const deleteBox = document.getElementById("deleteBox");
+
+        if (nickBox.style.display === "none" || nickBox.style.display === "") {
+            nickBox.style.display = "block";
+            pwBox.style.display = "none";
+            deleteBox.style.display = "none";
+        } else {
+            nickBox.style.display = "none";
+        }
+    }
+
+    async function checkNickname() {
+        const nicknameInput = document.getElementById("newNickname");
+        const nick = nicknameInput.value.trim();
+        const resultText = document.getElementById("nick-check-text");
+
+        if (nick === "") {
+            alert("닉네임을 입력하세요.");
+            nicknameInput.focus();
+            return;
+        }
+
+        const res = await fetch("${pageContext.request.contextPath}/nickname-check", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            body: "nickname=" + encodeURIComponent(nick)
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        if (data.success) {
+            document.getElementById("nickChecked").value = "Y";
+            document.getElementById("checkedNickname").value = nick;
+            resultText.innerText = "사용 가능한 닉네임입니다.";
+            resultText.style.color = "#4cd964";
+        } else {
+            document.getElementById("nickChecked").value = "N";
+            document.getElementById("checkedNickname").value = "";
+            resultText.innerText = "이미 사용 중인 닉네임입니다.";
+            resultText.style.color = "#ff6b6b";
+        }
+    }
+
+    function validateNickForm() {
+        const nick = document.getElementById("newNickname").value.trim();
+        const checked = document.getElementById("nickChecked").value;
+        const checkedNick = document.getElementById("checkedNickname").value;
+
+        if (nick.length < 2 || nick.length > 20) {
+            alert("닉네임은 2자 이상 20자 이하로 입력하세요.");
+            return false;
+        }
+
+        if (checked !== "Y" || checkedNick !== nick) {
+            alert("닉네임 중복확인을 완료해주세요.");
+            return false;
+        }
+
+        return true;
+    }
+
+    async function buyNickTicket() {
+        const orderRes = await fetch("${pageContext.request.contextPath}/nickname-ticket-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }
+        });
+
+        const orderData = await orderRes.json();
+
+        if (!orderData.success) {
+            alert(orderData.message);
+            return;
+        }
+
+        const clientKey = "test_ck_6BYq7GWPVv20ejRA9LnlVNE5vbo1"; // 예: test_ck_...
+        const tossPayments = TossPayments(clientKey);
+        const payment = tossPayments.payment({
+            customerKey: "user_${sessionScope.loginUserPk}"
+        });
+
+        await payment.requestPayment({
+            method: "CARD",
+            amount: {
+                currency: "KRW",
+                value: orderData.amount
+            },
+            orderId: orderData.orderId,
+            orderName: orderData.orderName,
+            successUrl: window.location.origin + "${pageContext.request.contextPath}/payment/success",
+            failUrl: window.location.origin + "${pageContext.request.contextPath}/payment/fail"
+        });
+
+    }
+
+    const nickForm = document.getElementById("nickForm");
+
+    if (nickForm) {
+        nickForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            if (!validateNickForm()) {
+                return;
+            }
+
+            const res = await fetch("${pageContext.request.contextPath}/change-nickname", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                },
+                body: new URLSearchParams(new FormData(nickForm))
+            });
+
+            const data = await res.json();
+            alert(data.message);
+
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+
+
+
+
 
 </script>
 </body>

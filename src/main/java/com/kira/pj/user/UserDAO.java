@@ -18,6 +18,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.Random;
+//토스 import
+import java.net.URI;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import javax.servlet.http.HttpSession;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.UUID;
 
 public class UserDAO {
     public static final UserDAO DAO = new UserDAO();
@@ -205,7 +218,16 @@ public class UserDAO {
             if (nickname == null || nickname.trim().isEmpty()) {
                 return json(false, "닉네임을 입력해주세요.");
             }
+            // 닉변
+            nickname = nickname.trim();
 
+            HttpSession session = request.getSession();
+            String currentNickname = (String) session.getAttribute("loginUserNickname");
+
+            if (currentNickname != null && currentNickname.equals(nickname)) {
+                return json(false, "현재 사용 중인 닉네임입니다.");
+            }
+            // 여기까지
             if (isNicknameExists(nickname)) {
                 return json(false, "이미 사용중인 닉네임 입니다.");
             }
@@ -316,7 +338,7 @@ public class UserDAO {
                 session.setAttribute("loginUserId", rs.getString("u_id"));
                 session.setAttribute("loginUserNickname", rs.getString("u_nickname"));
                 session.setAttribute("loginUserEmail", rs.getString("u_email"));
-
+                session.setAttribute("loginUserNickTicket", rs.getInt("u_nick_ticket"));
                 // =============================tk 수정 : 로그인 시 프사를 보여주기 위한 이미지url 세션으로 가져오기
                 PreparedStatement pstmtProfile = null;
                 ResultSet rsProfile = null;
@@ -860,4 +882,354 @@ public class UserDAO {
         return uPk; // 못 찾으면 null 반환
     }
 
+    // 닉네임 변경
+    public boolean buyNickTicket(String pk) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = DBManager.connect();
+
+            String sql = "update userReg set u_nick_ticket = u_nick_ticket + 1 where u_pk = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, pk);
+
+            return pstmt.executeUpdate() == 1;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            DBManager.close(conn, pstmt, null);
+        }
+    }
+
+    public String changeNickname(HttpServletRequest request) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            HttpSession session = request.getSession();
+            String pk = (String) session.getAttribute("loginUserPk");
+            String currentNickname = (String) session.getAttribute("loginUserNickname");
+
+            String newNickname = request.getParameter("newNickname");
+            String nickChecked = request.getParameter("nickChecked");
+            String checkedNickname = request.getParameter("checkedNickname");
+
+            if (pk == null) {
+                return json(false, "로그인이 필요합니다.");
+            }
+
+            if (newNickname == null || newNickname.trim().isEmpty()) {
+                return json(false, "새 닉네임을 입력해주세요.");
+            }
+
+            newNickname = newNickname.trim();
+
+            if (newNickname.length() < 2 || newNickname.length() > 20) {
+                return json(false, "닉네임은 2자 이상 20자 이하로 입력해주세요.");
+            }
+
+            if (currentNickname != null && currentNickname.equals(newNickname)) {
+                return json(false, "현재 닉네임과 동일합니다.");
+            }
+
+            if (!"Y".equals(nickChecked) || checkedNickname == null || !checkedNickname.equals(newNickname)) {
+                return json(false, "닉네임 중복확인을 먼저 완료해주세요.");
+            }
+
+            conn = DBManager.connect();
+
+            // 1. 변경권 확인
+            String ticketSql = "select u_nick_ticket from userReg where u_pk = ?";
+            pstmt = conn.prepareStatement(ticketSql);
+            pstmt.setString(1, pk);
+            rs = pstmt.executeQuery();
+
+            if (!rs.next()) {
+                return json(false, "회원 정보를 찾을 수 없습니다.");
+            }
+
+            int ticket = rs.getInt("u_nick_ticket");
+            DBManager.close(null, pstmt, rs);
+
+            if (ticket <= 0) {
+                return json(false, "닉네임 변경권이 없습니다.");
+            }
+
+            // 2. 닉네임 중복 재확인
+            String checkSql = "select 1 from userReg where u_nickname = ?";
+            pstmt = conn.prepareStatement(checkSql);
+            pstmt.setString(1, newNickname);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return json(false, "이미 사용중인 닉네임 입니다.");
+            }
+
+            DBManager.close(null, pstmt, rs);
+
+            // 3. 닉네임 변경 + 티켓 차감
+            String updateSql = "update userReg " +
+                    "set u_nickname = ?, u_nick_ticket = u_nick_ticket - 1 " +
+                    "where u_pk = ? and u_nick_ticket > 0";
+
+            pstmt = conn.prepareStatement(updateSql);
+            pstmt.setString(1, newNickname);
+            pstmt.setString(2, pk);
+
+            if (pstmt.executeUpdate() == 1) {
+                session.setAttribute("loginUserNickname", newNickname);
+                session.setAttribute("loginUserNickTicket", ticket - 1);
+                return json(true, "닉네임이 변경되었습니다.");
+            }
+
+            return json(false, "닉네임 변경 실패");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return json(false, "닉네임 변경 실패");
+        } finally {
+            DBManager.close(conn, pstmt, rs);
+        }
+    }
+
+    public int getNickTicket(String pk) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBManager.connect();
+            String sql = "select u_nick_ticket from userReg where u_pk = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, pk);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("u_nick_ticket");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(conn, pstmt, rs);
+        }
+
+        return 0;
+    }
+
+
+    public String createNickTicketOrder(String userPk, int amount, int ticketCnt) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = DBManager.connect();
+
+            String orderId = "NICK_" + System.currentTimeMillis();
+
+            String sql = "insert into nick_ticket_order " +
+                    "(nto_order_id, nto_user_pk, nto_amount, nto_ticket_cnt, nto_status, nto_created_at) " +
+                    "values (?, ?, ?, ?, 'READY', sysdate)";
+
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, orderId);
+            pstmt.setString(2, userPk);
+            pstmt.setInt(3, amount);
+            pstmt.setInt(4, ticketCnt);
+
+            if (pstmt.executeUpdate() == 1) {
+                return orderId;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBManager.close(conn, pstmt, null);
+        }
+
+        return null;
+    }
+
+    // 토스
+
+
+    public boolean confirmNickTicketPayment(HttpServletRequest request, String paymentKey, String orderId, String amount) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        HttpURLConnection tossConn = null;
+        BufferedReader br = null;
+
+        try {
+            if (paymentKey == null || paymentKey.trim().isEmpty()) return false;
+            if (orderId == null || orderId.trim().isEmpty()) return false;
+            if (amount == null || amount.trim().isEmpty()) return false;
+
+            int reqAmount = Integer.parseInt(amount);
+
+            conn = DBManager.connect();
+            conn.setAutoCommit(false);
+
+            // 1. 주문 조회
+            String selectSql = "select nto_user_pk, nto_amount, nto_ticket_cnt, nto_status " +
+                    "from nick_ticket_order where nto_order_id = ?";
+            pstmt = conn.prepareStatement(selectSql);
+            pstmt.setString(1, orderId);
+            rs = pstmt.executeQuery();
+
+            if (!rs.next()) {
+                conn.rollback();
+                return false;
+            }
+
+            String userPk = rs.getString("nto_user_pk");
+            int dbAmount = rs.getInt("nto_amount");
+            int ticketCnt = rs.getInt("nto_ticket_cnt");
+            String status = rs.getString("nto_status");
+
+            // 이미 처리된 주문이면 중복 지급 방지
+            if (!"READY".equals(status)) {
+                conn.rollback();
+                return false;
+            }
+
+            // 금액 검증
+            if (dbAmount != reqAmount) {
+                conn.rollback();
+                return false;
+            }
+
+            DBManager.close(null, pstmt, rs);
+            pstmt = null;
+            rs = null;
+
+            // 2. 토스 승인 API 호출
+            String secretKey = "test_sk_0RnYX2w532z14akl9jeM3NeyqApQ"; // test_sk_...
+            String auth = Base64.getEncoder()
+                    .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
+
+            String jsonBody = "{"
+                    + "\"paymentKey\":\"" + esc(paymentKey) + "\","
+                    + "\"orderId\":\"" + esc(orderId) + "\","
+                    + "\"amount\":" + reqAmount
+                    + "}";
+
+            URL url = new URL("https://api.tosspayments.com/v1/payments/confirm");
+            tossConn = (HttpURLConnection) url.openConnection();
+            tossConn.setRequestMethod("POST");
+            tossConn.setRequestProperty("Authorization", "Basic " + auth);
+            tossConn.setRequestProperty("Content-Type", "application/json");
+            tossConn.setRequestProperty("Idempotency-Key", java.util.UUID.randomUUID().toString());
+            tossConn.setDoOutput(true);
+
+            OutputStream os = tossConn.getOutputStream();
+            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+            os.close();
+
+            int responseCode = tossConn.getResponseCode();
+
+            if (responseCode != 200) {
+                br = new BufferedReader(new InputStreamReader(tossConn.getErrorStream(), StandardCharsets.UTF_8));
+                String line;
+                StringBuilder errorBody = new StringBuilder();
+                while ((line = br.readLine()) != null) {
+                    errorBody.append(line);
+                }
+                System.out.println("토스 승인 실패: " + errorBody.toString());
+
+                conn.rollback();
+                return false;
+            }
+
+            br = new BufferedReader(new InputStreamReader(tossConn.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            StringBuilder resultBody = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                resultBody.append(line);
+            }
+
+            String body = resultBody.toString();
+            System.out.println("토스 승인 성공 응답: " + body);
+
+            // 최소 검증
+            if (!body.contains("\"orderId\":\"" + orderId + "\"")) {
+                conn.rollback();
+                return false;
+            }
+
+            if (!body.contains("\"status\":\"DONE\"")) {
+                conn.rollback();
+                return false;
+            }
+
+            // 3. 주문 완료 처리
+            String updateOrderSql = "update nick_ticket_order " +
+                    "set nto_status = 'DONE', nto_payment_key = ?, nto_approved_at = sysdate " +
+                    "where nto_order_id = ? and nto_status = 'READY'";
+            pstmt = conn.prepareStatement(updateOrderSql);
+            pstmt.setString(1, paymentKey);
+            pstmt.setString(2, orderId);
+
+            int orderUpdated = pstmt.executeUpdate();
+
+            DBManager.close(null, pstmt, null);
+            pstmt = null;
+
+            if (orderUpdated != 1) {
+                conn.rollback();
+                return false;
+            }
+
+            // 4. 유저 티켓 지급
+            String updateUserSql = "update userReg " +
+                    "set u_nick_ticket = u_nick_ticket + ? " +
+                    "where u_pk = ?";
+            pstmt = conn.prepareStatement(updateUserSql);
+            pstmt.setInt(1, ticketCnt);
+            pstmt.setString(2, userPk);
+
+            int userUpdated = pstmt.executeUpdate();
+
+            if (userUpdated != 1) {
+                conn.rollback();
+                return false;
+            }
+
+            conn.commit();
+
+            // 5. 세션 갱신
+            HttpSession session = request.getSession();
+            session.setAttribute("loginUserNickTicket", getNickTicket(userPk));
+
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (conn != null) conn.rollback();
+            } catch (Exception ignored) {
+            }
+            return false;
+        } finally {
+            try {
+                if (conn != null) conn.setAutoCommit(true);
+            } catch (Exception ignored) {
+            }
+
+            try {
+                if (br != null) br.close();
+            } catch (Exception ignored) {
+            }
+
+            if (tossConn != null) {
+                tossConn.disconnect();
+            }
+
+            DBManager.close(conn, pstmt, rs);
+        }
+    }
 }
