@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.addEventListener("click", (e) => {
             if (
                 //해설: 여기가 핵심 로직입니다! e.target은 방금 마우스로 정확히 콕 찍은 바로 그 태그를 말합니다.
-                // !searchInput.contains(e.target): 방금 클릭한 곳이 '검색어 입력창' 안쪽이 아니고 
+                // !searchInput.contains(e.target): 방금 클릭한 곳이 '검색어 입력창' 안쪽이 아니고
                 // !searchDropdown.contains(e.target): 방금 클릭한 곳이 '검색 결과 드롭다운 창' 안쪽도 아니라면!
                 // 의미: "유저가 검색을 하려는 것도 아니고, 검색 결과를 누르려는 것도 아니네? 그냥 엉뚱한 바탕화면을 눌렀구나!" 하고 판단하는 조건문입니다.
                 !searchInput.contains(e.target) &&
