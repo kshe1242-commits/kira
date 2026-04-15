@@ -3,18 +3,25 @@
 
 // ── 마퀴 텍스트 업데이트 ──────────────────────────────────────
 // ✅ 현재 곡만 표시
+// [FIX 6] innerHTML → DOM 조작으로 XSS 방지
 function updateMarquee() {
     const titleEl = document.getElementById('bgm-title-mp3');
     if (!titleEl || !window.playlist || window.playlist.length === 0) return;
-
     const track = window.playlist[window.currentIndex];
     if (!track) return;
 
-    titleEl.innerHTML = `
-        <span class="marquee">
-            <span class="marquee-inner">▶ ${track.title}</span>
-        </span>
-    `;
+    // 기존: titleEl.innerHTML = `<span class="marquee">...<span>${track.title}</span>...</span>`;
+    // 수정: textContent 로 삽입
+    const inner = document.createElement('span');
+    inner.className = 'marquee-inner';
+    inner.textContent = '▶ ' + track.title; // XSS 안전
+
+    const outer = document.createElement('span');
+    outer.className = 'marquee';
+    outer.appendChild(inner);
+
+    titleEl.innerHTML = '';
+    titleEl.appendChild(outer);
 }
 
 // ── 스마트폰 썸네일 + 링크 + 제목 갱신 ──────────────────────────

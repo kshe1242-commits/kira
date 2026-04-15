@@ -87,8 +87,10 @@ function renderQueueHeader() {
 
 function renderQueue() {
     if (!window.playlist || window.playlist.length === 0) {
-        setTimeout(renderQueue, 300);
-        return;
+        if (!window.fetchDone) setTimeout(renderQueue, 300)
+        { // fetchDone일 때는 재시도 안 함
+            return;
+        }
     }
 
     const container = document.getElementById('bgm-queue-list');
@@ -288,8 +290,13 @@ async function bgmPreview() {
 
         window._previewData = { youtubeId: ytId, title: data.title };
     } catch (e) {
-        console.error("미리보기 에러 상세:", e);
-        showAddMsg('유튜브에서 영상 정보를 가져오지 못했습니다.', 'error');
+        console.error('미리보기 오류:', e);
+        showAddMsg('영상 정보를 불러오지 못했습니다.', 'error');
+        // 아래 3줄 추가
+        document.getElementById('bgm-duration-input-row').style.display = 'none';
+        document.getElementById('bgm-add-preview').style.display = 'none';
+        document.getElementById('bgm-confirm-btn').style.display = 'none';
+        window.previewData = null;
     }
 }
 
