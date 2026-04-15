@@ -19,6 +19,7 @@ public class PhotoDTO {
     private String regDate;
     private List<CommentDTO> comments;
 
+
     public String toJSON() {
         Gson gson = new Gson();
         return gson.toJson(this);

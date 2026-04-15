@@ -107,6 +107,9 @@ function renderFeedView(hostId) {
 // =============================================
 // 피드 카드 1장 빌더
 // =============================================
+// =============================================
+// 피드 카드 1장 빌더
+// =============================================
 function buildFeedCard(item, index, isOwner, loginId) {
     const pid = item.photoId;
 
@@ -167,7 +170,6 @@ function buildFeedCard(item, index, isOwner, loginId) {
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
             background: #fdfcf8; border-top: 1px solid #eee;">
 
-            <!-- 댓글 헤더 -->
             <div style="
                 padding: 14px 18px 10px;
                 border-bottom: 0.5px dashed #f0e6e8;
@@ -186,7 +188,6 @@ function buildFeedCard(item, index, isOwner, loginId) {
                 </span>
             </div>
 
-            <!-- 댓글 목록 -->
             <div style="padding: 6px 18px 0; display:flex; flex-direction:column;">
                 ${item.comments && item.comments.length > 0
         ? item.comments.map(c => {
@@ -197,7 +198,6 @@ function buildFeedCard(item, index, isOwner, loginId) {
                             padding:10px 0;
                             border-bottom:0.5px dashed #f0eae8;">
 
-                            <!-- 아바타 -->
                             <div style="
                                 width:30px; height:30px; min-width:30px;
                                 border-radius:50%;
@@ -205,11 +205,14 @@ function buildFeedCard(item, index, isOwner, loginId) {
                                 display:flex; align-items:center; justify-content:center;
                                 font-size:13px; font-weight:700; color:#d4537e;
                                 border:1px solid #f4c0d155;
+                                overflow:hidden;
                                 font-family:'Gaegu', cursive;">
-                                ${initial}
+                                ${c.profileImgUrl
+                ? `<img src="${c.profileImgUrl}" style="width:100%; height:100%; object-fit:cover;">`
+                : initial
+            }
                             </div>
 
-                            <!-- 본문 -->
                             <div style="flex:1;">
                                 <div style="display:flex; align-items:baseline; gap:6px; margin-bottom:3px;">
                                     <span style="font-size:14px; font-weight:700; color:#444; font-family:'Gaegu', cursive;">
@@ -224,7 +227,6 @@ function buildFeedCard(item, index, isOwner, loginId) {
                                 </div>
                             </div>
 
-                            <!-- 삭제 버튼 -->
                             ${c.userId === loginId ? `
                                 <button onclick="deleteComment(${c.commentId})" style="
                                     background:none; border:none; cursor:pointer;
@@ -244,7 +246,6 @@ function buildFeedCard(item, index, isOwner, loginId) {
     }
             </div>
 
-            <!-- 입력창 -->
             <div style="
                 padding:12px 18px 14px;
                 border-top:0.5px dashed #f0e6e8;
@@ -273,7 +274,6 @@ function buildFeedCard(item, index, isOwner, loginId) {
     </div>
     `;
 }
-
 
 // =============================================
 // 댓글창 슬라이드 토글 기능

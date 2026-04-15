@@ -201,14 +201,17 @@ public class PhotoDAO {
 
     // 특정 사진의 댓글만 가져오는 내부 메서드 추가
     // 특정 사진의 댓글만 가져오는 내부 메서드
+    // 특정 사진의 댓글만 가져오는 내부 메서드
     private List<CommentDTO> getCommentsByPhotoId(Connection conn, int photoId) {
         PreparedStatement ps = null;
         ResultSet rs = null;
 
-        // ✨ 핵심: 회원 테이블명을 'userreg'로 수정하여 조인합니다!
-        String sql = "SELECT c.comment_id, c.photo_id, c.user_id, ur.u_name AS user_name, c.content, TO_CHAR(c.reg_date, 'YYYY-MM-DD HH24:MI') AS reg_date " +
+        // ✨ 핵심: profile(p) 테이블을 LEFT JOIN 하여 프로필 사진(profile_img_url)을 가져옵니다!
+        // c.user_id 와 p.userid 가 같은 사람의 데이터를 엮어줍니다.
+        String sql = "SELECT c.comment_id, c.photo_id, c.user_id, ur.u_name AS user_name, c.content, TO_CHAR(c.reg_date, 'YYYY-MM-DD HH24:MI') AS reg_date, p.profile_img_url " +
                 "FROM photo_comment c " +
                 "JOIN userreg ur ON c.user_id = ur.u_id " +
+                "LEFT JOIN profile p ON c.user_id = p.userid " + // 프로필 사진이 없는 사람도 에러 없이 댓글이 나오도록 LEFT JOIN 사용
                 "WHERE c.photo_id = ? ORDER BY c.reg_date ASC";
 
         List<CommentDTO> comments = new ArrayList<>();
@@ -224,11 +227,15 @@ public class PhotoDAO {
                 comment.setPhotoId(rs.getInt("photo_id"));
                 comment.setUserId(rs.getString("user_id"));
 
-                // ✨ 조인해서 가져온 실명(u_name -> user_name)을 세팅합니다.
+                // 조인해서 가져온 실명(u_name) 세팅
                 comment.setUserName(rs.getString("user_name"));
 
                 comment.setContent(rs.getString("content"));
                 comment.setRegDate(rs.getString("reg_date"));
+
+                // ✨ DB에서 가져온 프로필 사진 URL 세팅 (프사가 없는 유저는 null이 들어갑니다)
+                comment.setProfileImgUrl(rs.getString("profile_img_url"));
+
                 comments.add(comment);
             }
         } catch (Exception e) {
