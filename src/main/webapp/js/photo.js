@@ -1,21 +1,69 @@
 let photoData = [];
 
 // =============================================
+// 상태 저장을 위한 변수 (댓글 작성/삭제 시 스크롤 및 열림 상태 유지용)
+// =============================================
+let savedScrollTop = 0;
+let openCommentSections = [];
+
+function saveState() {
+    const container = document.getElementById('notebook-content');
+    if (container) savedScrollTop = container.scrollTop;
+
+    openCommentSections = [];
+    photoData.forEach(item => {
+        const section = document.getElementById(`comment-section-${item.photoId}`);
+        // maxHeight가 0px이 아니고 세팅되어 있다면 열려있는 상태
+        if (section && section.style.maxHeight && section.style.maxHeight !== '0px') {
+            openCommentSections.push(item.photoId);
+        }
+    });
+}
+
+function restoreState() {
+    const container = document.getElementById('notebook-content');
+    if (container) container.scrollTop = savedScrollTop;
+
+    openCommentSections.forEach(pid => {
+        const section = document.getElementById(`comment-section-${pid}`);
+        if (section) {
+            // ✨ 깜빡임 방지 로직: 스르륵 열리는 애니메이션을 잠시 끄고 즉시 엽니다.
+            section.style.transition = 'none';
+            section.style.maxHeight = '500px';
+
+            // 브라우저 렌더링 강제 업데이트
+            void section.offsetHeight;
+
+            // 다음번 토글을 위해 원래 애니메이션 복구
+            section.style.transition = 'max-height 0.3s ease-in-out';
+        }
+    });
+}
+
+// =============================================
 // 메인 로드
 // =============================================
-function loadPhoto() {
+// preserveState가 true면 기존 스크롤과 댓글창 열림 상태를 기억합니다.
+function loadPhoto(preserveState = false) {
+    if (preserveState) saveState();
+
     const container = document.getElementById('notebook-content');
     container.style.overflowY = 'auto';
     container.style.height = '100%';
-    container.innerHTML = '<div style="text-align:center; padding:20px;">사진첩을 열고 있어요... 📸</div>';
-    const hostId = sessionStorage.getItem("currentHostId") || loginUserId; // 없으면 내 id
 
+    // 상태 유지가 아닐 때만 로딩바 표시 (댓글 달 때 깜빡임 방지)
+    if (!preserveState) {
+        container.innerHTML = '<div style="text-align:center; padding:20px;">사진첩을 열고 있어요... 📸</div>';
+    }
+
+    const hostId = sessionStorage.getItem("currentHostId") || loginUserId;
 
     fetch(`/photo-data?host_id=${encodeURIComponent(hostId)}`)
         .then(res => res.json())
         .then(data => {
             photoData = data;
             renderFeedView(hostId);
+            if (preserveState) restoreState(); // 렌더링 후 상태 복구
         })
         .catch(err => {
             container.innerHTML = '<div style="text-align:center; padding:20px; color:red;">사진첩 로딩 실패 ㅠㅠ</div>';
@@ -29,7 +77,7 @@ function loadPhoto() {
 function renderFeedView(hostId) {
     const container = document.getElementById('notebook-content');
     const loginId = loginUserId;
-    const isOwner = (hostId === loginId); // 내 홈피인지 여부
+    const isOwner = (hostId === loginId);
 
     let html = `
         <div style="
@@ -57,7 +105,7 @@ function renderFeedView(hostId) {
     }
 
     photoData.forEach((item, index) => {
-        html += buildFeedCard(item, index,isOwner);
+        html += buildFeedCard(item, index, isOwner, loginId);
     });
 
     html += `</div></div>`;
@@ -69,32 +117,28 @@ function renderFeedView(hostId) {
 // =============================================
 // 피드 카드 1장 빌더
 // =============================================
-// =============================================
-// 피드 카드 1장 빌더 (리뉴얼 버전)
-// =============================================
-function buildFeedCard(item, index, isOwner) {
+function buildFeedCard(item, index, isOwner, loginId) {
+    const pid = item.photoId;
+
     return `
-    <div id="detail-card-${index}" style="
+    <div id="detail-card-${pid}" style="
         background:#fff; border-radius:12px;
         border:0.5px solid #eee; overflow:hidden;
         display:flex; flex-direction:column;
         box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px;">
 
         <div style="display:flex; flex-direction:row;">
-            
             <div style="width:520px; min-width:520px; height:400px; overflow:hidden; border-right:1px solid #eee;">
-                <img id="detail-img-${index}"
+                <img id="detail-img-${pid}"
                      src="${item.imgName}"
                      style="width:100%; height:100%; object-fit:cover; display:block;">
-                <input type="file" id="img-input-${index}" accept="image/*"
+                <input type="file" id="img-input-${pid}" accept="image/*"
                        style="display:none;" onchange="applyImgEdit(${index}, event)">
             </div>
 
             <div style="flex:1; padding:24px; display:flex; flex-direction:column;">
-                
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                    <div id="title-view-${index}"
-                         style="font-size:22px; font-weight:bold; color:#444; font-family:'Gaegu', cursive;">
+                    <div id="title-view-${pid}" style="font-size:22px; font-weight:bold; color:#444; font-family:'Gaegu', cursive;">
                         ${item.title}
                     </div>
                     <button onclick="deletePhoto(${index})" style="
@@ -109,22 +153,13 @@ function buildFeedCard(item, index, isOwner) {
                     📅 ${item.regDate} &nbsp;|&nbsp; 👤 ${item.userId}
                 </div>
 
-                <div id="content-view-${index}"
+                <div id="content-view-${pid}"
                      style="font-size:15px; color:#666; line-height:1.6;
                             flex:1; overflow-y:auto; white-space:pre-wrap;
                             margin-bottom:20px; font-family:'Gaegu', cursive;">${item.content}</div>
 
                 <div style="display:flex; align-items:center; gap:20px; border-top:1px dashed #eee; padding-top:16px;">
-                    <button onclick="onLikeClick(${index})" style="
-                        background:none; border:none; cursor:pointer;
-                        display:flex; align-items:center; gap:6px;
-                        color:#e88; font-size:15px; font-family:'Gaegu'; padding:0;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e88" stroke-width="2">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                        <span id="like-count-${index}">0</span>
-                    </button>
-                    <button onclick="toggleComment(${index})" style="
+                    <button onclick="toggleComment(${pid})" style="
                         background:none; border:none; cursor:pointer;
                         display:flex; align-items:center; gap:6px;
                         color:#888; font-size:15px; font-family:'Gaegu'; padding:0;">
@@ -132,83 +167,223 @@ function buildFeedCard(item, index, isOwner) {
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                         <span>댓글</span>
-                        <span id="comment-count-${index}">${item.comments ? item.comments.length : 0}</span>
+                        <span id="comment-count-${pid}">${item.comments ? item.comments.length : 0}</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="comment-section-${index}" style="
+        <div id="comment-section-${pid}" style="
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
             background: #fdfcf8; border-top: 1px solid #eee;">
-            <div style="padding: 20px;">
-                <div style="font-size:14px; color:#777; margin-bottom:10px;">댓글을 남겨보세요 💬</div>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" placeholder="내용을 입력하세요..." style="
-                        flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:20px;
-                        font-family:'Gaegu', cursive; font-size:14px; outline:none;">
-                    <button style="
-                        padding:6px 16px; background:#ffb3ba; color:#fff; border:none;
-                        border-radius:20px; font-family:'Gaegu', cursive; cursor:pointer;">등록</button>
-                </div>
-                    <div style="margin-top:15px; font-size:13px; color:#888;">${item.comments && item.comments.length > 0 ? item.comments.map(c => 
-                    `<div style="padding:8px 0; border-bottom:1px dashed #eee;">
-                        <b>${c.userId}</b> : ${c.content}
-                    </div>`).join('')  : `<div style="padding:8px 0;">아직 작성된 댓글이 없222습니다.</div>`}
-                    </div>          
-                     </div>
+
+            <div style="
+                padding: 14px 18px 10px;
+                border-bottom: 0.5px dashed #f0e6e8;
+                display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span style="font-size:13px; color:#bbb; font-family:'Gaegu', cursive;">댓글</span>
+                <span style="
+                    background:#ffb3ba22; color:#d4537e;
+                    font-size:12px; font-weight:700;
+                    padding:2px 8px; border-radius:20px;
+                    border:1px solid #f4c0d133;
+                    font-family:'Gaegu', cursive;">
+                    ${item.comments ? item.comments.length : 0}
+                </span>
+            </div>
+
+            <div style="padding: 6px 18px 0; display:flex; flex-direction:column;">
+                ${item.comments && item.comments.length > 0
+        ? item.comments.map(c => {
+            const initial = c.userName ? c.userName.charAt(0) : '?';
+            return `
+                        <div style="
+                            display:flex; align-items:flex-start; gap:10px;
+                            padding:10px 0;
+                            border-bottom:0.5px dashed #f0eae8;">
+
+                            <div style="
+                                width:30px; height:30px; min-width:30px;
+                                border-radius:50%;
+                                background:#fbeaf0;
+                                display:flex; align-items:center; justify-content:center;
+                                font-size:13px; font-weight:700; color:#d4537e;
+                                border:1px solid #f4c0d155;
+                                overflow:hidden;
+                                font-family:'Gaegu', cursive;">
+                                ${c.profileImgUrl
+                ? `<img src="${c.profileImgUrl}" style="width:100%; height:100%; object-fit:cover;">`
+                : initial
+            }
+                            </div>
+
+                            <div style="flex:1;">
+                                <div style="display:flex; align-items:baseline; gap:6px; margin-bottom:3px;">
+                                    <span style="font-size:14px; font-weight:700; color:#444; font-family:'Gaegu', cursive;">
+                                        ${c.userName}
+                                    </span>
+                                    <span style="font-size:11px; color:#bbb; font-family:'Gaegu', cursive;">
+                                        ${c.regDate}
+                                    </span>
+                                </div>
+                                <div style="font-size:14px; color:#666; line-height:1.5; font-family:'Gaegu', cursive;">
+                                    ${c.content}
+                                </div>
+                            </div>
+
+                            ${c.userId === loginId ? `
+                                <button onclick="deleteComment(${c.commentId})" style="
+                                    background:none; border:none; cursor:pointer;
+                                    font-size:13px; opacity:0.35; padding:2px 4px;
+                                    border-radius:4px;"
+                                    onmouseover="this.style.opacity='1'"
+                                    onmouseout="this.style.opacity='0.35'"
+                                    title="삭제">🗑️</button>
+                            ` : ''}
+                        </div>`;
+        }).join('')
+        : `<div style="
+                        padding:18px 0; text-align:center;
+                        font-size:13px; color:#ccc; font-family:'Gaegu', cursive;">
+                        아직 댓글이 없어요. 첫 댓글을 남겨보세요!
+                    </div>`
+    }
+            </div>
+
+            <div style="
+                padding:12px 18px 14px;
+                border-top:0.5px dashed #f0e6e8;
+                display:flex; gap:8px; align-items:center;
+                margin-top:4px;">
+                <input type="text"
+                    id="comment-input-${pid}"
+                    placeholder="댓글을 남겨보세요 💬"
+                    style="
+                        flex:1; padding:9px 14px;
+                        border:1px solid #e8dde0;
+                        border-radius:24px;
+                        font-family:'Gaegu', cursive; font-size:14px; outline:none;
+                        background:#fdfcfa; color:#555;"
+                    onkeypress="if(event.key==='Enter') addComment(${pid})">
+                <button onclick="addComment(${pid})" style="
+                    padding:8px 16px;
+                    background:#ffb3ba; color:#7a2035;
+                    border:none; border-radius:24px;
+                    font-family:'Gaegu', cursive; font-size:13px; font-weight:700;
+                    cursor:pointer; white-space:nowrap;">
+                    등록
+                </button>
+            </div>
         </div>
     </div>
     `;
 }
-// 좋아요 / 댓글 - 로직은 나중에
-function onLikeClick(index) {}
 
 // =============================================
 // 댓글창 슬라이드 토글 기능
 // =============================================
-function toggleComment(index) {
-    const commentSection = document.getElementById(`comment-section-${index}`);
-
-    // max-height 값을 조절해서 부드럽게 열리고 닫히는 효과
+function toggleComment(pid) {
+    const commentSection = document.getElementById(`comment-section-${pid}`);
     if (commentSection.style.maxHeight === '0px' || commentSection.style.maxHeight === '') {
-        commentSection.style.maxHeight = '500px'; // 열기
+        commentSection.style.maxHeight = '500px';
     } else {
-        commentSection.style.maxHeight = '0px'; // 닫기
+        commentSection.style.maxHeight = '0px';
     }
 }
+
+// =============================================
+// 댓글 추가 비동기 요청
+// =============================================
+async function addComment(photoId) {
+    const inputEl = document.getElementById(`comment-input-${photoId}`);
+    const content = inputEl.value.trim();
+
+    if (!content) {
+        alert('댓글 내용을 입력해주세요.');
+        inputEl.focus();
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('photoId', photoId);
+    params.append('content', content);
+
+    try {
+        const response = await fetch('/photo-comment', {
+            method: 'POST',
+            body: params
+        });
+
+        if (response.ok) {
+            inputEl.value = '';
+            loadPhoto(true); // true를 넘겨서 애니메이션 없이 상태 유지!
+        } else {
+            alert('댓글 등록에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('Comment Error:', error);
+        alert('서버 통신 중 오류가 발생했습니다.');
+    }
+}
+
+// =============================================
+// 댓글 삭제 (신규 기능)
+// =============================================
+async function deleteComment(commentId) {
+    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+        const response = await fetch(`/photo-comment?commentId=${commentId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadPhoto(true); // 삭제 후에도 스크롤 및 댓글창 열림 유지
+        } else {
+            alert('댓글 삭제에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('Delete Comment Error:', error);
+        alert('서버 통신 중 오류가 발생했습니다.');
+    }
+}
+
+
 // =============================================
 // 이미지 수정
 // =============================================
-
 function applyImgEdit(index, event) {
     const file = event.target.files[0];
     if (!file) return;
     const newUrl = URL.createObjectURL(file);
     photoData[index].imgUrl = newUrl;
     photoData[index].imgName = file.name;
-    document.getElementById(`detail-img-${index}`).src = newUrl;
+    const pid = photoData[index].photoId;
+    document.getElementById(`detail-img-${pid}`).src = newUrl;
 }
 
 // =============================================
-// 삭제
+// 게시글 삭제
 // =============================================
 async function deletePhoto(index) {
-    const imgName = photoData[index].imgName;
+    const item = photoData[index];
     if (!confirm('이 게시글을 삭제할까요?')) return;
-    const del = await deleteSupabase(imgName);
+
+    await deleteSupabase(item.imgName);
 
     try {
-        const response = await fetch(`/photo-data?imgName=${encodeURIComponent(imgName)}`, {
+        const response = await fetch(`/photo-data?imgName=${encodeURIComponent(item.imgName)}&photoId=${item.photoId}`, {
             method: 'DELETE'
         });
-        console.log(response.ok);
+
         const text = await response.text();
         const row = parseInt(text);
         if (row > 0) {
-            closeAddModal();
             alert('사진이 성공적으로 삭제되었습니다!');
-            loadPhoto();
+            loadPhoto(false); // 게시글이 삭제되었으므로 스크롤 리셋
         } else {
             alert('DB 삭제에 실패했습니다.');
         }
@@ -319,14 +494,13 @@ async function addPhoto() {
             method: 'POST',
             body: params
         });
-        console.log(response.ok);
         const text = await response.text();
         const row = parseInt(text);
 
         if (row > 0) {
             closeAddModal();
             alert('사진이 성공적으로 등록되었습니다!');
-            loadPhoto();
+            loadPhoto(false);
         } else {
             alert('DB 저장에 실패했습니다.');
         }
@@ -357,8 +531,7 @@ async function uploadSupabase() {
         }
 
         const text = await response.text();
-        const data = {url: text};
-        return data;
+        return { url: text };
     } catch (error) {
         console.error('Error:', error);
         alert('서버 통신 중 오류가 발생했습니다.');
@@ -373,12 +546,11 @@ async function deleteSupabase(imgName) {
         });
 
         if (!response.ok) {
-            alert('클라우드 삭제에 실패했습니다.');
+            console.error('클라우드 파일 삭제 실패');
             return null;
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('서버 통신 중 오류가 발생했습니다.');
         return null;
     }
 }
