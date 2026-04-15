@@ -212,7 +212,7 @@ public class PhotoDAO {
                 "FROM photo_comment c " +
                 "JOIN userreg ur ON c.user_id = ur.u_id " +
                 "LEFT JOIN profile p ON c.user_id = p.userid " + // 프로필 사진이 없는 사람도 에러 없이 댓글이 나오도록 LEFT JOIN 사용
-                "WHERE c.photo_id = ? ORDER BY c.reg_date ASC";
+                "WHERE c.photo_id = ? ORDER BY c.reg_date DESC";
 
         List<CommentDTO> comments = new ArrayList<>();
 

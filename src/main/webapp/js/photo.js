@@ -22,22 +22,23 @@ function saveState() {
 
 function restoreState() {
     const container = document.getElementById('notebook-content');
-    if (container) container.scrollTop = savedScrollTop;
 
     openCommentSections.forEach(pid => {
         const section = document.getElementById(`comment-section-${pid}`);
         if (section) {
-            // ✨ 깜빡임 방지 로직: 스르륵 열리는 애니메이션을 잠시 끄고 즉시 엽니다.
             section.style.transition = 'none';
-            section.style.maxHeight = '500px';
-
-            // 브라우저 렌더링 강제 업데이트
-            void section.offsetHeight;
-
-            // 다음번 토글을 위해 원래 애니메이션 복구
+            section.style.maxHeight = '2000px'; // ✨ 수정: 500px -> 2000px 으로 넉넉하게!
+            void section.offsetHeight; // Reflow
             section.style.transition = 'max-height 0.3s ease-in-out';
         }
     });
+
+    // ✨ 수정: 높이 계산이 끝난 후 스크롤을 복구하도록 setTimeout 사용 (비율 100% 튕김 방지)
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = savedScrollTop;
+        }, 10); // 10ms만 줘도 브라우저가 안정을 찾습니다.
+    }
 }
 
 // =============================================
@@ -174,7 +175,7 @@ function buildFeedCard(item, index, isOwner, loginId) {
         </div>
 
         <div id="comment-section-${pid}" style="
-            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
+            max-height: 0; overflow: auto; transition: max-height 0.3s ease-in-out;
             background: #fdfcf8; border-top: 1px solid #eee;">
 
             <div style="
@@ -193,6 +194,31 @@ function buildFeedCard(item, index, isOwner, loginId) {
                     font-family:'Gaegu', cursive;">
                     ${item.comments ? item.comments.length : 0}
                 </span>
+            </div>
+            
+             <div style="
+                padding:12px 18px 14px;
+                border-top:0.5px dashed #f0e6e8;
+                display:flex; gap:8px; align-items:center;
+                margin-top:4px;">
+                <input type="text"
+                    id="comment-input-${pid}"
+                    placeholder="댓글을 남겨보세요 💬"
+                    style="
+                        flex:1; padding:9px 14px;
+                        border:1px solid #e8dde0;
+                        border-radius:24px;
+                        font-family:'Gaegu', cursive; font-size:14px; outline:none;
+                        background:#fdfcfa; color:#555;"
+                    onkeypress="if(event.key==='Enter') addComment(${pid})">
+                <button onclick="addComment(${pid})" style="
+                    padding:8px 16px;
+                    background:#ffb3ba; color:#7a2035;
+                    border:none; border-radius:24px;
+                    font-family:'Gaegu', cursive; font-size:13px; font-weight:700;
+                    cursor:pointer; white-space:nowrap;">
+                    등록
+                </button>
             </div>
 
             <div style="padding: 6px 18px 0; display:flex; flex-direction:column;">
@@ -253,30 +279,7 @@ function buildFeedCard(item, index, isOwner, loginId) {
     }
             </div>
 
-            <div style="
-                padding:12px 18px 14px;
-                border-top:0.5px dashed #f0e6e8;
-                display:flex; gap:8px; align-items:center;
-                margin-top:4px;">
-                <input type="text"
-                    id="comment-input-${pid}"
-                    placeholder="댓글을 남겨보세요 💬"
-                    style="
-                        flex:1; padding:9px 14px;
-                        border:1px solid #e8dde0;
-                        border-radius:24px;
-                        font-family:'Gaegu', cursive; font-size:14px; outline:none;
-                        background:#fdfcfa; color:#555;"
-                    onkeypress="if(event.key==='Enter') addComment(${pid})">
-                <button onclick="addComment(${pid})" style="
-                    padding:8px 16px;
-                    background:#ffb3ba; color:#7a2035;
-                    border:none; border-radius:24px;
-                    font-family:'Gaegu', cursive; font-size:13px; font-weight:700;
-                    cursor:pointer; white-space:nowrap;">
-                    등록
-                </button>
-            </div>
+           
         </div>
     </div>
     `;
