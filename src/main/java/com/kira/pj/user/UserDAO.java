@@ -981,9 +981,8 @@ public class UserDAO {
             pstmt.setString(2, pk);
 
             if (pstmt.executeUpdate() == 1) {
-                session.setAttribute("loginUserNickname", newNickname);
-                session.setAttribute("loginUserNickTicket", ticket - 1);
-                return json(true, "닉네임이 변경되었습니다.");
+                request.getSession().invalidate();  // ⭐ 세션 끊기
+                return json(true, "닉네임이 변경되었습니다. 다시 로그인해주세요.");
             }
 
             return json(false, "닉네임 변경 실패");

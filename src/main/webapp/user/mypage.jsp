@@ -417,7 +417,10 @@
             alert(data.message);
 
             if (data.success) {
-                location.reload();
+                alert("닉네임이 변경되어 다시 로그인해주세요.");
+                location.href = "${pageContext.request.contextPath}/login";
+            } else {
+                alert(data.message);
             }
         });
     }
