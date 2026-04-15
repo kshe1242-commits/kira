@@ -65,3 +65,16 @@ CREATE TABLE profile
 );
 
 select * from profile;
+
+
+CREATE SEQUENCE photo_comment_seq START WITH 1 INCREMENT BY 1;
+
+-- 댓글 테이블 생성
+CREATE TABLE photo_comment (
+                               comment_id NUMBER PRIMARY KEY,
+                               photo_id NUMBER NOT NULL,                -- 원본 사진 게시글 ID
+                               user_id VARCHAR2(50) NOT NULL,           -- 댓글 작성자
+                               content VARCHAR2(500) NOT NULL,          -- 댓글 내용
+                               reg_date DATE DEFAULT SYSDATE);
+
+select * from photo_comment;

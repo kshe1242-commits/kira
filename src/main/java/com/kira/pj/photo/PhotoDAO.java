@@ -159,46 +159,74 @@ public class PhotoDAO {
     }
 
     public List<PhotoDTO> getPhotoList(HttpServletRequest request) {
-
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        String sql = "select * from photo where user_id = ? order by reg_date desc ";
+
+        // photo_id(PK)를 반드시 SELECT 해야 합니다.
+        String sql = "SELECT photo_id, user_id, img_name, title, content, reg_date FROM photo WHERE user_id = ? ORDER BY reg_date DESC";
         String hostId = request.getParameter("host_id");
-//        if (hostId == null || hostId.isEmpty()) {
-//            HttpSession session = request.getSession();
-//            hostId = session.getAttribute("loginUserId").toString();
-//        }
+
+        List<PhotoDTO> photos = new ArrayList<>();
 
         try {
             conn = DBManager.connect();
-            System.out.println("conn success!!");
             ps = conn.prepareStatement(sql);
             ps.setString(1, hostId);
             rs = ps.executeQuery();
-            ArrayList<PhotoDTO> photos = new ArrayList<>();
+
             while (rs.next()) {
                 PhotoDTO photo = new PhotoDTO();
-                photo.setUserId(rs.getString(2));
-                photo.setImgName(rs.getString(3));
-                photo.setTitle(rs.getString(4));
-                photo.setContent(rs.getString(5));
-                photo.setRegDate(rs.getString(6));
-                photos.add(photo);
+                photo.setPhotoId(rs.getInt("photo_id")); // 컬럼명으로 가져오는 것이 안전합니다
+                photo.setUserId(rs.getString("user_id"));
+                photo.setImgName(rs.getString("img_name"));
+                photo.setTitle(rs.getString("title"));
+                photo.setContent(rs.getString("content"));
+                photo.setRegDate(rs.getString("reg_date"));
 
+                // 핵심: 현재 사진의 ID(photoId)를 이용해 해당 사진의 댓글들을 가져와서 DTO에 담습니다.
+                List<CommentDTO> commentList = getCommentsByPhotoId(conn, photo.getPhotoId());
+                photo.setComments(commentList);
+
+                photos.add(photo);
             }
-//            System.out.println(photos);
-            System.out.println(hostId);
-            System.out.println("is that you..?");
             return photos;
         } catch (Exception e) {
             e.printStackTrace();
-
         } finally {
             DBManager.close(conn, ps, rs);
         }
-        return null;
+        return photos;
+    }
 
+    // 특정 사진의 댓글만 가져오는 내부 메서드 추가
+    private List<CommentDTO> getCommentsByPhotoId(Connection conn, int photoId) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "SELECT comment_id, photo_id, user_id, content, reg_date FROM photo_comment WHERE photo_id = ? ORDER BY reg_date ASC";
+        List<CommentDTO> comments = new ArrayList<>();
+
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, photoId);
+            rs = ps.executeQuery();
+            while(rs.next()) {
+                CommentDTO comment = new CommentDTO();
+                comment.setCommentId(rs.getInt("comment_id"));
+                comment.setPhotoId(rs.getInt("photo_id"));
+                comment.setUserId(rs.getString("user_id"));
+                comment.setContent(rs.getString("content"));
+                comment.setRegDate(rs.getString("reg_date"));
+                comments.add(comment);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // conn은 닫으면 안 됩니다. 상위 메서드에서 닫아야 함.
+            if (rs != null) try { rs.close(); } catch(Exception e){}
+            if (ps != null) try { ps.close(); } catch(Exception e){}
+        }
+        return comments;
     }
 }
 

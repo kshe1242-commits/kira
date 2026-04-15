@@ -27,8 +27,7 @@ public class Home extends HttpServlet {
 
         // 여기서 "dailyQna" 라는 이름으로 담아줘야 JSP에서 ${dailyQna.question} 으로 꺼내 쓸 수 있습니다.
         request.setAttribute("dailyQna", HomeDAO.getDailyQnA(request));
-        List<PhotoDTO> photoList = PhotoDAO.PDAO.getPhotoList(request);
-        request.setAttribute("photoList", photoList);
+        request.setAttribute("photoList", PhotoDAO.PDAO.getPhotoList(request));
 
         request.setAttribute("searchMain", SearchDAO.searchMain(request));
 

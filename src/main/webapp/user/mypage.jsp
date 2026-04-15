@@ -224,7 +224,6 @@
                 sessionStorage.removeItem("currentHostImg");
 
                 location.href = '/main';
-            location.href = '/main';
             }
 
         } catch (error) {

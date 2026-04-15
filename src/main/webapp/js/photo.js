@@ -10,10 +10,10 @@ function loadPhoto() {
     container.innerHTML = '<div style="text-align:center; padding:20px;">사진첩을 열고 있어요... 📸</div>';
     const hostId = sessionStorage.getItem("currentHostId") || loginUserId; // 없으면 내 id
 
-
     fetch(`/photo-data?host_id=${encodeURIComponent(hostId)}`)
         .then(res => res.json())
         .then(data => {
+            // 백엔드에서 Gson으로 변환한 List<PhotoDTO> 데이터
             photoData = data;
             renderFeedView(hostId);
         })
@@ -57,7 +57,7 @@ function renderFeedView(hostId) {
     }
 
     photoData.forEach((item, index) => {
-        html += buildFeedCard(item, index,isOwner);
+        html += buildFeedCard(item, index, isOwner);
     });
 
     html += `</div></div>`;
@@ -67,14 +67,14 @@ function renderFeedView(hostId) {
 }
 
 // =============================================
-// 피드 카드 1장 빌더
-// =============================================
-// =============================================
-// 피드 카드 1장 빌더 (리뉴얼 버전)
+// 피드 카드 1장 빌더 (DB의 photoId 적극 활용)
 // =============================================
 function buildFeedCard(item, index, isOwner) {
+    // DB의 고유 ID (PK)
+    const pid = item.photoId;
+
     return `
-    <div id="detail-card-${index}" style="
+    <div id="detail-card-${pid}" style="
         background:#fff; border-radius:12px;
         border:0.5px solid #eee; overflow:hidden;
         display:flex; flex-direction:column;
@@ -83,17 +83,17 @@ function buildFeedCard(item, index, isOwner) {
         <div style="display:flex; flex-direction:row;">
             
             <div style="width:520px; min-width:520px; height:400px; overflow:hidden; border-right:1px solid #eee;">
-                <img id="detail-img-${index}"
+                <img id="detail-img-${pid}"
                      src="${item.imgName}"
                      style="width:100%; height:100%; object-fit:cover; display:block;">
-                <input type="file" id="img-input-${index}" accept="image/*"
+                <input type="file" id="img-input-${pid}" accept="image/*"
                        style="display:none;" onchange="applyImgEdit(${index}, event)">
             </div>
 
             <div style="flex:1; padding:24px; display:flex; flex-direction:column;">
                 
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                    <div id="title-view-${index}"
+                    <div id="title-view-${pid}"
                          style="font-size:22px; font-weight:bold; color:#444; font-family:'Gaegu', cursive;">
                         ${item.title}
                     </div>
@@ -109,22 +109,22 @@ function buildFeedCard(item, index, isOwner) {
                     📅 ${item.regDate} &nbsp;|&nbsp; 👤 ${item.userId}
                 </div>
 
-                <div id="content-view-${index}"
+                <div id="content-view-${pid}"
                      style="font-size:15px; color:#666; line-height:1.6;
                             flex:1; overflow-y:auto; white-space:pre-wrap;
                             margin-bottom:20px; font-family:'Gaegu', cursive;">${item.content}</div>
 
                 <div style="display:flex; align-items:center; gap:20px; border-top:1px dashed #eee; padding-top:16px;">
-                    <button onclick="onLikeClick(${index})" style="
+                    <button onclick="onLikeClick(${pid})" style="
                         background:none; border:none; cursor:pointer;
                         display:flex; align-items:center; gap:6px;
                         color:#e88; font-size:15px; font-family:'Gaegu'; padding:0;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e88" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                         </svg>
-                        <span id="like-count-${index}">0</span>
+                        <span id="like-count-${pid}">0</span>
                     </button>
-                    <button onclick="toggleComment(${index})" style="
+                    <button onclick="toggleComment(${pid})" style="
                         background:none; border:none; cursor:pointer;
                         display:flex; align-items:center; gap:6px;
                         color:#888; font-size:15px; font-family:'Gaegu'; padding:0;">
@@ -132,81 +132,124 @@ function buildFeedCard(item, index, isOwner) {
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                         <span>댓글</span>
-                        <span id="comment-count-${index}">${item.comments ? item.comments.length : 0}</span>
+                        <span id="comment-count-${pid}">${item.comments ? item.comments.length : 0}</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="comment-section-${index}" style="
+        <div id="comment-section-${pid}" style="
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
             background: #fdfcf8; border-top: 1px solid #eee;">
             <div style="padding: 20px;">
                 <div style="font-size:14px; color:#777; margin-bottom:10px;">댓글을 남겨보세요 💬</div>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" placeholder="내용을 입력하세요..." style="
+                    <input type="text" id="comment-input-${pid}" placeholder="내용을 입력하세요..." style="
                         flex:1; padding:8px 12px; border:1px solid #ddd; border-radius:20px;
                         font-family:'Gaegu', cursive; font-size:14px; outline:none;">
-                    <button style="
+                    <button onclick="addComment(${pid})" style="
                         padding:6px 16px; background:#ffb3ba; color:#fff; border:none;
                         border-radius:20px; font-family:'Gaegu', cursive; cursor:pointer;">등록</button>
                 </div>
-                    <div style="margin-top:15px; font-size:13px; color:#888;">${item.comments && item.comments.length > 0 ? item.comments.map(c => 
-                    `<div style="padding:8px 0; border-bottom:1px dashed #eee;">
+                <div style="margin-top:15px; font-size:13px; color:#888;">
+                    ${item.comments && item.comments.length > 0 ? item.comments.map(c =>
+        `<div style="padding:8px 0; border-bottom:1px dashed #eee;">
                         <b>${c.userId}</b> : ${c.content}
-                    </div>`).join('')  : `<div style="padding:8px 0;">아직 작성된 댓글이 없222습니다.</div>`}
-                    </div>          
-                     </div>
+                    </div>`).join('') : `<div style="padding:8px 0;">아직 작성된 댓글이 없습니다.</div>`}
+                </div>          
+            </div>
         </div>
     </div>
     `;
 }
+
 // 좋아요 / 댓글 - 로직은 나중에
-function onLikeClick(index) {}
+function onLikeClick(pid) {
+    // 나중에 구현
+}
 
 // =============================================
-// 댓글창 슬라이드 토글 기능
+// 댓글창 슬라이드 토글 기능 (pid 기준)
 // =============================================
-function toggleComment(index) {
-    const commentSection = document.getElementById(`comment-section-${index}`);
+function toggleComment(pid) {
+    const commentSection = document.getElementById(`comment-section-${pid}`);
 
-    // max-height 값을 조절해서 부드럽게 열리고 닫히는 효과
     if (commentSection.style.maxHeight === '0px' || commentSection.style.maxHeight === '') {
-        commentSection.style.maxHeight = '500px'; // 열기
+        commentSection.style.maxHeight = '500px';
     } else {
-        commentSection.style.maxHeight = '0px'; // 닫기
+        commentSection.style.maxHeight = '0px';
     }
 }
+
+// =============================================
+// 댓글 추가 비동기 요청
+// =============================================
+async function addComment(photoId) {
+    const inputEl = document.getElementById(`comment-input-${photoId}`);
+    const content = inputEl.value.trim();
+
+    if (!content) {
+        alert('댓글 내용을 입력해주세요.');
+        inputEl.focus();
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('photoId', photoId);
+    params.append('content', content);
+
+    try {
+        const response = await fetch('/photo-comment', {
+            method: 'POST',
+            body: params
+        });
+
+        if (response.ok) {
+            inputEl.value = '';
+            loadPhoto(); // 임시로 전체를 다시 불러옴. 나중에는 DOM만 추가하는 방식으로 개선 가능
+        } else {
+            alert('댓글 등록에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('Comment Error:', error);
+        alert('서버 통신 중 오류가 발생했습니다.');
+    }
+}
+
 // =============================================
 // 이미지 수정
 // =============================================
-
 function applyImgEdit(index, event) {
     const file = event.target.files[0];
     if (!file) return;
     const newUrl = URL.createObjectURL(file);
     photoData[index].imgUrl = newUrl;
     photoData[index].imgName = file.name;
-    document.getElementById(`detail-img-${index}`).src = newUrl;
+
+    // DB PK인 photoId를 찾아서 UI 변경
+    const pid = photoData[index].photoId;
+    document.getElementById(`detail-img-${pid}`).src = newUrl;
 }
 
 // =============================================
-// 삭제
+// 게시글 삭제
 // =============================================
 async function deletePhoto(index) {
-    const imgName = photoData[index].imgName;
+    const item = photoData[index];
     if (!confirm('이 게시글을 삭제할까요?')) return;
-    const del = await deleteSupabase(imgName);
+
+    // 1. Supabase에서 먼저 삭제 (파일명 기준)
+    await deleteSupabase(item.imgName);
 
     try {
-        const response = await fetch(`/photo-data?imgName=${encodeURIComponent(imgName)}`, {
+        // 2. DB에서 삭제 (파일명과 PK 모두 넘김)
+        const response = await fetch(`/photo-data?imgName=${encodeURIComponent(item.imgName)}&photoId=${item.photoId}`, {
             method: 'DELETE'
         });
-        console.log(response.ok);
+
         const text = await response.text();
         const row = parseInt(text);
         if (row > 0) {
-            closeAddModal();
             alert('사진이 성공적으로 삭제되었습니다!');
             loadPhoto();
         } else {
@@ -319,7 +362,6 @@ async function addPhoto() {
             method: 'POST',
             body: params
         });
-        console.log(response.ok);
         const text = await response.text();
         const row = parseInt(text);
 
@@ -357,8 +399,7 @@ async function uploadSupabase() {
         }
 
         const text = await response.text();
-        const data = {url: text};
-        return data;
+        return { url: text };
     } catch (error) {
         console.error('Error:', error);
         alert('서버 통신 중 오류가 발생했습니다.');
@@ -373,12 +414,11 @@ async function deleteSupabase(imgName) {
         });
 
         if (!response.ok) {
-            alert('클라우드 삭제에 실패했습니다.');
+            console.error('클라우드 파일 삭제 실패');
             return null;
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('서버 통신 중 오류가 발생했습니다.');
         return null;
     }
 }
