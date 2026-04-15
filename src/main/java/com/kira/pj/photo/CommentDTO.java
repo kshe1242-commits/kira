@@ -19,5 +19,6 @@ public class CommentDTO {
     private String content;
     private String regDate;
     private String profileImgUrl;
+    private String userNickname;
 
 }

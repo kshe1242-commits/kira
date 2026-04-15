@@ -284,7 +284,7 @@ function buildFeedCard(item, index, isOwner, loginId) {
                             </div>
                             <div style="flex:1;">
                                 <div style="display:flex; align-items:baseline; gap:6px; margin-bottom:3px;">
-                                    <span class="comment-author" onclick="goSearchMain('${c.userId}', '${c.userName}')">${c.userName}</span>
+                                    <span class="comment-author" onclick="goSearchMain('${c.userId}', '${c.userNickname}')">${c.userName}</span>
                                     <span class="comment-date">${c.regDate}</span>
                                 </div>
                                 <div class="comment-text">${c.content}</div>

@@ -208,10 +208,11 @@ public class PhotoDAO {
 
         // ✨ 핵심: profile(p) 테이블을 LEFT JOIN 하여 프로필 사진(profile_img_url)을 가져옵니다!
         // c.user_id 와 p.userid 가 같은 사람의 데이터를 엮어줍니다.
-        String sql = "SELECT c.comment_id, c.photo_id, c.user_id, ur.u_name AS user_name, c.content, TO_CHAR(c.reg_date, 'YYYY-MM-DD HH24:MI') AS reg_date, p.profile_img_url " +
+        String sql = "SELECT c.comment_id, c.photo_id, c.user_id, ur.u_name AS user_name, ur.u_nickname, " + // ur.u_nickname 추가
+                "c.content, TO_CHAR(c.reg_date, 'YYYY-MM-DD HH24:MI') AS reg_date, p.profile_img_url " +
                 "FROM photo_comment c " +
                 "JOIN userreg ur ON c.user_id = ur.u_id " +
-                "LEFT JOIN profile p ON c.user_id = p.userid " + // 프로필 사진이 없는 사람도 에러 없이 댓글이 나오도록 LEFT JOIN 사용
+                "LEFT JOIN profile p ON c.user_id = p.userid " +
                 "WHERE c.photo_id = ? ORDER BY c.reg_date DESC";
 
         List<CommentDTO> comments = new ArrayList<>();
@@ -235,6 +236,7 @@ public class PhotoDAO {
 
                 // ✨ DB에서 가져온 프로필 사진 URL 세팅 (프사가 없는 유저는 null이 들어갑니다)
                 comment.setProfileImgUrl(rs.getString("profile_img_url"));
+                comment.setUserNickname(rs.getString("u_nickname"));
 
                 comments.add(comment);
             }
