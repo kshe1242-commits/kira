@@ -107,6 +107,9 @@ public class VisitorDAO {
 
         // [핵심] userReg 테이블과 JOIN하여 u_nickname을 가져온다.
         String sql =
+                // join을 사용해서 발생할 수 있는 버그는 양쪽 db값이 다 있어야하는데 탈퇴한 회원이 생기면
+                // 표시는 안되는데 4개만 나오는 유령회원이 될 수 있어서 LEFT OUTER JOIN문을 써서 해결할 수 있지만
+                // 닉네임이 null로 넘어오니 따로 탈퇴한 회원으로 분기처리가 필요함
                 "SELECT * FROM (" +
                         "  SELECT v.v_id, v.v_writer_pk, u.u_nickname AS v_writer_nickname, v.v_emoji, TO_CHAR(v.v_date, 'MM.DD') as v_date_fmt " +
                         "  FROM visitor_log v " +
@@ -161,7 +164,7 @@ public class VisitorDAO {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         List<VisitorDTO> list = new ArrayList<>();
-
+        //
         int start = (page - 1) * 7 + 1;
         int end = page * 7;
 
