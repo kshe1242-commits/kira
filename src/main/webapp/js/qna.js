@@ -1,17 +1,17 @@
-// 보기 모드 <-> 수정 모드 전환 함수
+// --- 🎲 오늘의 문답 (QnA) 기능 영역 ---
+// 보기 모드 <-> 수정 모드 전환
 function toggleEditQnA() {
     const viewMode = document.getElementById("qna-view-mode");
     const editMode = document.getElementById("qna-edit-mode");
 
-    if (viewMode.style.display === "none") {
-        viewMode.style.display = "block";
-        editMode.style.display = "none";
+    if (viewMode.classList.contains("qna-hidden")) {
+        viewMode.classList.remove("qna-hidden");
+        editMode.classList.add("qna-hidden");
     } else {
-        viewMode.style.display = "none";
-        editMode.style.display = "block";
+        viewMode.classList.add("qna-hidden");
+        editMode.classList.remove("qna-hidden");
     }
 }
-
 // 답변 저장 (신규 작성 & 수정 공통 사용)
 function saveQnA(mode) {
     // 신규 작성인지 수정인지에 따라 읽어올 textarea 아이디가 다름
@@ -40,4 +40,8 @@ function saveQnA(mode) {
             }
         })
         .catch(err => console.error("QnA 저장 에러:", err));
+}
+// 다이어리에 추가 버튼 (기능 추가 시 구현)
+function addQnAToDiary() {
+    alert("다이어리 연동 기능은 준비 중입니다! 🛠️");
 }

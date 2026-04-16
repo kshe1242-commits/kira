@@ -355,49 +355,4 @@ function updateHitCount() {
 }
 
 
-// --- 🎲 오늘의 문답 (QnA) 기능 영역 ---
-// 보기 모드 <-> 수정 모드 전환
-function toggleEditQnA() {
-    const viewMode = document.getElementById("qna-view-mode");
-    const editMode = document.getElementById("qna-edit-mode");
 
-    if (viewMode.classList.contains("qna-hidden")) {
-        viewMode.classList.remove("qna-hidden");
-        editMode.classList.add("qna-hidden");
-    } else {
-        viewMode.classList.add("qna-hidden");
-        editMode.classList.remove("qna-hidden");
-    }
-}
-
-// 답변 저장 (신규 작성 & 수정 공통 사용)
-function saveQnA(mode) {
-    const textareaId = mode === "edit" ? "qna-edit-answer" : "qna-answer";
-    const answerText = document.getElementById(textareaId).value.trim();
-
-    if (!answerText) {
-        alert("답변을 입력해 주세요! ✏️");
-        return;
-    }
-
-    fetch("/update-qna", {
-        method: "POST",
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: `answer=${encodeURIComponent(answerText)}`,
-    })
-        .then((res) => res.json())
-        .then((data) => {
-            if (data.success) {
-                alert("문답이 저장되었습니다! 🍀");
-                loadPage("/home?ajax=true"); // 텍스트 변경 확인을 위해 홈 리로드
-            } else {
-                alert("저장에 실패했어요 😢");
-            }
-        })
-        .catch((err) => console.error("QnA 저장 에러:", err));
-}
-
-// 다이어리에 추가 버튼 (기능 추가 시 구현)
-function addQnAToDiary() {
-    alert("다이어리 연동 기능은 준비 중입니다! 🛠️");
-}
